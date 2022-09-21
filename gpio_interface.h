@@ -19,6 +19,13 @@
 namespace GPIO
 {    
 
+    enum STATE
+    {
+        GPIO_ERR = -1,
+        GPIO_OFF = 0,
+        GPIO_RDY = 1,
+    };
+
     enum PINMODE
     {
         OUTPUT = PI_OUTPUT,
@@ -28,9 +35,9 @@ namespace GPIO
 
     };
 
-    static bool is_gpio_init = false;
+    static int gpio_state = GPIO::GPIO_OFF;
 
-    int init_gpio();
+    void init_gpio();
 
     void pinMode(int Pin, int Mode);
 
@@ -44,9 +51,15 @@ namespace GPIO
     {
     private:
         int pin;
-        
-        
+        int state = Servo::SERVO_OFF;
+                
     public:
+        enum STATE
+        {
+            SERVO_ERR = -1,
+            SERVO_OFF = 0,
+            SERVO_RDY = 1,
+        };
         Servo();
         Servo(int pin);
         void attach(int pin);
@@ -62,7 +75,14 @@ namespace GPIO
         int bus = 1;
         uint8_t address = 0;
         int handle;
-    public:        
+        int state = Wire::WIRE_OFF;
+    public:
+        enum STATE
+        {
+            WIRE_ERR = -1,
+            WIRE_OFF = 0,
+            WIRE_RDY = 1,
+        };
         void begin(uint8_t addr);
         void writeByte(uint8_t val);
         void writeBytes(uint8_t *buf, int size);
@@ -77,6 +97,7 @@ namespace GPIO
     protected:
         int handle;
         int baudrate;
+        int state = Serial_Base::SERIAL_OFF;
         enum
         {
             BAUDRATE4800 = 4800,
@@ -86,6 +107,12 @@ namespace GPIO
         };
 
     public:
+        enum STATE
+        {
+            SERIAL_ERR = -1,
+            SERIAL_OFF = 0,
+            SERIAL_RDY = 1,
+        };
         virtual int begin(int baud) = 0;
         virtual void write(uint8_t val) = 0;
         virtual void write(uint8_t *buf, int size) = 0;

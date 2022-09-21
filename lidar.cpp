@@ -74,7 +74,7 @@ void LiDAR::init()
 {
     //std::cout << "Enter >> LiDAR::init()" << std::endl;
     int ret = this->serial.begin(128000);
-    std::cout << "Serial return " << ret << std::endl;
+    std::cout << "Serial begin "<< ret << std::endl;
     
     
     //std::cout << "Return >> LiDAR::init()" << std::endl;
