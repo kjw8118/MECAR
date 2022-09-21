@@ -49,6 +49,7 @@ public:
     int get_one_packet();
     void scan_start();
     void scan_stop();
+    void close();
     void run();
     ~LiDAR();
 };

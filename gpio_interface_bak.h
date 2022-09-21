@@ -1,14 +1,14 @@
 #ifndef __GPIO_INTERFACE_H__
 #define __GPIO_INTERFACE_H__
 
-#include <stdint.h>
-#include <string>
-
-#define TERMIOS2
-#if defined(TERMIOS)
+#define TERMIOS
+#ifdef TERMIOS
 #include <termios.h>
-#elif defined(TERMIOS2)
-#include <asm/termbits.h>
+#endif
+
+#define STD
+#ifdef STD
+#include <string>
 #endif
 
 #define RASPBERRYPI
@@ -110,23 +110,21 @@ namespace GPIO
     class Serial_termios: public Serial_Base
     {
     private:
-    #if defined(TERMIOS)
         struct termios tty;
-    #elif defined(TERMIOS2)
-        struct termios2 tty;
-    #endif
-
     public:
         int begin(int baud);
         void write(uint8_t val);
         void write(uint8_t *buf, int size);
         uint8_t read();
         int read(uint8_t *buf, int size);
-        int available();
+        #ifdef STD
+        std::string print();
         std::string readline();
-        std::string readlines();
-
-        int handle_public;
+        #endif
+        int available();
+        void close();
+        void flush();
+        
 
     };
     

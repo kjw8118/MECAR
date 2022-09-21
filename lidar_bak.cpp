@@ -2,7 +2,8 @@
 
 #include <iostream>
 #include <string>
-//using namespace std;
+#include <unistd.h>
+using namespace std;
 
 uint16_t LiDAR::dec2word(uint8_t *buf)
 {
@@ -18,99 +19,103 @@ uint32_t LiDAR::dec2int(uint8_t *buf)
 }
 void LiDAR::command(uint8_t cmd)
 {
-    //std::cout << "Enter >> LiDAR::command(" << (int)cmd << ")" << std::endl;
+    //cout << "Enter >> LiDAR::command(" << (int)cmd << ")" << "\n" << flush;
     uint8_t cmd_buf[2];
     cmd_buf[0] = this->CMD_COM;
     cmd_buf[1] = cmd;
+    std::cout << (unsigned)cmd_buf[0] << " " << (unsigned)cmd_buf[1] << endl;
+    //return;
+    //unsigned char cmds[] = { 0xa5};
+
+    //::write(3, )
     this->serial.write(cmd_buf, 2);
-    if(cmd != this->CMD_RST && cmd != this->CMD_STP)
+    //::usleep(200000);
+
+    /*if(cmd != this->CMD_RST && cmd != this->CMD_STP)
     {
-        //std::cout << "Get header" << std::endl;
-        bool flag = true;
-        while(flag)
-        {
-            if(this->serial.read() != 0xa5)            
-                if(this->serial.read() != 0x5a)
-                    flag =false;
-        }
+        //cout << "Get header" << "\n" << flush;
+        //cout << "Len :" << this->serial.available() << "\n" << flush;
+        //string str = this->serial.readline();//((char*)buf);
+        //cout << "Msg[" << str.length() << "]: " << str << "\n" << "\n" << flush;
+        //return;
+        //int len = this->serial.available();
         
-        std::cout << "Start sign pass" << std::endl;
-        uint8_t pstart[2] = {0xa5, 0x5a};
-        //this->serial.read(pstart, 2);
+        uint8_t pstart[2];
+        int len = this->serial.available();
+        this->serial.read(pstart, 2);
+        std::cout << "Len " << len << "\n" << std::flush;
         uint16_t start_sign = this->dec2word(pstart);
-        //std::cout << (unsigned)pstart[0] << " " << (unsigned)pstart[1] << std::endl;
+        
 
         uint8_t plnm[4];
         this->serial.read(plnm, 4);
-        //std::cout << plnm[0] << " " << plnm[1] << " " << plnm[2] << " " << plnm[3] << std::endl;
         uint32_t lnm = this->dec2int(plnm);
         uint32_t length = lnm & ~(3 << 30);
         uint8_t mode = lnm >> 30;
 
         uint8_t type = this->serial.read();
-        //std::cout << type << std::endl;
-        std::cout << std::hex << "Header >> Start sign: " << start_sign;
-        std::cout << std::dec << ", Length: " << length << ", Mode: " << (unsigned)mode << ", Type code: " << (unsigned)type << std::endl;
+        
+        std::cout << std::hex;
+        std::cout << (unsigned)pstart[0] << " " << (unsigned)pstart[1] << "\n" << std::flush;
+        std::cout << (unsigned)plnm[0] << " " << (unsigned)plnm[1] << " " << (unsigned)plnm[2] << " " << (unsigned)plnm[3] << "\n" << std::flush;
+        std::cout << (unsigned)type << "\n" << std::flush;
+        //cout << "Header >> Start sign: " << start_sign << ", Length: " << length << ", Mode: " << mode << ", Type code: " << type << "\n" << flush;
 
 
         
-    }
-    //std::cout << std::dec << "Return >> LiDAR::command(" << (int)cmd << ")" << std::endl;
+    }*/  
+    //cout << "Return >> LiDAR::command(" << (int)cmd << ")" << "\n" << flush;
 }
 LiDAR::LiDAR(/* args */)
 {
-    std::cout << "Enter >> LiDAR::LiDAR()" << std::endl;
-    this->tof.angle = new double[1024];
-    this->tof.distance = new double[1024];
+    //cout << "Enter >> LiDAR::LiDAR()" << "\n" << flush;
+    this->tof.angle = new double[400];
+    this->tof.distance = new double[400];
     this->tof.length = 0;
 
-    this->tof_temp.angle = new double[1024];
-    this->tof_temp.distance = new double[1024];
+    this->tof_temp.angle = new double[400];
+    this->tof_temp.distance = new double[400];
     this->tof_temp.length = 0;
-    //std::cout << "Return >> LiDAR::LiDAR()" << std::endl;
+    //cout << "Return >> LiDAR::LiDAR()" << "\n" << flush;
 
 }
 void LiDAR::init()
 {
-    //std::cout << "Enter >> LiDAR::init()" << std::endl;
+    //cout << "Enter >> LiDAR::init()" << "\n" << flush;
     int ret = this->serial.begin(128000);
-    std::cout << "Serial return " << ret << std::endl;
+    //sleep(1);
+    cout << "Serial return " << ret << endl;
+    //this->serial.begin(115200);
     
-    
-    //std::cout << "Return >> LiDAR::init()" << std::endl;
+    //cout << "Return >> LiDAR::init()" << "\n" << flush;
 }
 void LiDAR::soft_reset()
-{
-    //std::cout << "Enter >> LiDAR::soft_reset()" << std::endl;
-    this->command(this->CMD_RST);    
-    /*while(this->serial.available() > 0)
-    {
-        std::cout << this->serial.readline();
-    }*/
-    std::cout << this->serial.readlines();// << std::endl;
-    //uint8_t buf[256];
-    //int len = this->serial.read(buf, 256);
-    //buf[len] = 0;
-    //std::cout << "Received bytes: " << len << std::endl;
-    //std::cout << std::string((char*)buf) << "\n" << std::endl;
+{    
+    this->command(this->CMD_RST);
     
-    //std::cout << this->serial.readline() << std::endl;
+    //sleep(2);
+    uint8_t buf[255] = {0};
+    int len = 0;
+    while(true)
+    {
+        usleep(1000);
+        len = this->serial.read(buf, 1);
+        cout << len << " " << (unsigned)buf[0] << endl;
 
-    //std::cout << "Return >> LiDAR::soft_reset()" << std::endl;
+    }
+    this->serial.read(buf, 255);
+    cout << len << " " << (unsigned)buf[0] << '\n' << endl;
 }
 int LiDAR::get_device_health()
 {
-    //std::cout << "Get device health" << std::endl;
     this->command(this->CMD_HLT);
     uint8_t status = this->serial.read();
     uint8_t error[2];
     this->serial.read(error, 2);
-    std::cout << "Status: " << (unsigned)status << std::endl;
     return (int)status;
 }
 void LiDAR::get_device_info()
 {
-    //std::cout << "Get device info" << std::endl;
     this->command(this->CMD_INF);
     uint8_t model_number = this->serial.read();
     uint8_t pfirmware[2];
@@ -118,57 +123,100 @@ void LiDAR::get_device_info()
     uint16_t firmware_version = this->dec2word(pfirmware);
     uint8_t hardware_version = this->serial.read();
     uint8_t pserial_number[16];
-    this->serial.read(pserial_number, 16);
-    std::cout << "Model num.: " << (unsigned)model_number << " Firmware ver.: " << (unsigned)firmware_version << " Hardware ver.: " << (unsigned)hardware_version << " Serial num.: ";
-    for(int i=0; i<16; i++)
-    {
-        std::cout << std::hex << (unsigned)pserial_number[i];
-    }
-    std::cout << std::endl;
+    this->serial.read(pserial_number, 16);        
 }
 void LiDAR::scan_start()
 {
     this->command(this->CMD_STR);
+    while(true)
+    {
+        uint8_t buf[0];
+        int len = this->serial.read(buf, 1);
+        cout << len << " " << (unsigned)buf[0] << endl;
+    }
 
 }
 void LiDAR::scan_stop()
 {
     this->command(this->CMD_STP);
 }
+void LiDAR::close()
+{
+    this->serial.close();
+}
 void LiDAR::run()
 {
-    std::cout << "Enter >> LiDAR::run()" << std::endl;
+    cout << "Enter >> LiDAR::run()" << endl;
     this->init();
+    /*unsigned char buf_stp[] = {0xa5, 0x65};
+    int len_stp = ::write(3, buf_stp, sizeof(buf_stp));
+    cout << "writed len " << len_stp << endl;*/
+    unsigned char buf_rst[2];
+    buf_rst[0] = 0xa5;
+    buf_rst[1] = 0x60;
+    int len;
+    len = ::write(3, buf_rst, sizeof(buf_rst));
+    //len += ::write(3, buf_rst, sizeof(buf_rst));
+    //len += ::write(3, buf_rst, sizeof(buf_rst));
+    //len += ::write(3, buf_rst, sizeof(buf_rst));
+    cout << "writed len " << len << endl;
+    char read_buf[2];
+    int len_read;
     
-    this->soft_reset();
-
-    this->get_device_health();
-    this->get_device_info();
+    while(true)
+    {
+        len_read = ::read(3, read_buf, sizeof(read_buf));
+        cout << "Read " << len_read << " ";
+         for(int i=0; i<2; i++)
+         {
+            cout << (unsigned)read_buf[0] << " ";
+         }
+         cout << endl;
+    }
+    cout << endl;
+    //this->soft_reset();
     //this->scan_start();
-    int ret = 0;
-    while(ret >= 0)
+
+    //this->get_device_info();
+    //this->close();
+    //this->scan_start();
+    //int ret = 0;
+    //cout << "Now enter loop.." << endl;
+    //sleep(2);
+    //this->close();
+    
+    /*while(ret >= 0)
     {
         //ret = this->get_one_packet();
-    }
+        try
+        {
+            
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            this->close();
+        }
+        
+    }*/
 
 
 }
 LiDAR::~LiDAR()
 {
-    std::cout << "Enter >> LiDAR::~LiDAR()" << std::endl;
+    cout << "Enter >> LiDAR::~LiDAR()" << "\n" << flush;
     /*delete[] this->tof.angle;
     delete[] this->tof.distance;
 
     delete[] this->tof_temp.angle;
     delete[] this->tof_temp.distance;*/
-    //std::cout << "Return >> LiDAR::~LiDAR()" << std::endl;
+    cout << "Return >> LiDAR::~LiDAR()" << "\n" << flush;
 }
 
 int LiDAR::get_one_packet()
 {
     uint8_t msg;
     bool flag = true;
-    std::cout << "One loop";
     while(flag)
     {
         if(this->serial.read() == 0xaa)
@@ -178,10 +226,7 @@ int LiDAR::get_one_packet()
                 flag = false;
             }
         }
-        std::cout << ".";
     }
-    std::cout << " ";
-
     uint8_t pstart[2] = {0xaa, 0x55};
     uint16_t start = this->dec2word(pstart);
 
@@ -211,7 +256,6 @@ int LiDAR::get_one_packet()
     
     if(ct&1) // Start Period
     {
-        std::cout << "Start period, ";
         for(int i=0; i<this->tof_temp.length; i++)
         {
             this->tof.angle[i] = this->tof_temp.angle[i];
@@ -249,7 +293,6 @@ int LiDAR::get_one_packet()
     this->tof_temp.angle[this->tof_temp.length] = angle;
     this->tof_temp.distance[this->tof_temp.length] = distance;
     this->tof_temp.length++;
-    std::cout << angle << " -> ";
 
     for(int i=1; i<lsn; i++)
     {
@@ -277,10 +320,8 @@ int LiDAR::get_one_packet()
         this->tof_temp.angle[this->tof_temp.length] = angle;
         this->tof_temp.distance[this->tof_temp.length] = distance;
         this->tof_temp.length++;
-        std::cout << angle << ", ";
 
     }
-    std::cout << std::endl;
 
     if(cs != cs_xor)
     {

@@ -6,25 +6,18 @@
 using namespace std;
 #endif
 
-#define TERMIOS2
 
-#if defined(TERMIOS)
+
+#define TERMIOS
+#ifdef TERMIOS
 #include <stdio.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <termios.h>
-#include <sys/ioctl.h>
+#include <errno.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 #include <cstring>
 
-#elif defined(TERMIOS2)
-#include <stdio.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <asm/termbits.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <cstring>
 #endif
 
 #ifdef RASPBERRYPI
@@ -37,7 +30,7 @@ namespace GPIO
         if(GPIO::is_gpio_init)
         {
             #ifdef __DEBUG__
-            std::cout << "Already init" << std::endl;
+            cout << "Already init" << "\n" << flush;
             #endif
 
             return 0;
@@ -47,7 +40,7 @@ namespace GPIO
             GPIO::is_gpio_init = false;
 
             #ifdef __DEBUG__
-            std::cout << "Clock Fail" << std::endl;
+            cout << "Clock Fail" << "\n" << flush;
             #endif
             
             return -1;
@@ -57,7 +50,7 @@ namespace GPIO
             GPIO::is_gpio_init = false;
 
             #ifdef __DEBUG__
-            std::cout << "Init Fail" << std::endl;
+            cout << "Init Fail" << "\n" << flush;
             #endif
 
             return -1;
@@ -66,7 +59,7 @@ namespace GPIO
         GPIO::is_gpio_init = true;
 
         #ifdef __DEBUG__
-        std::cout << "Init Succ" << std::endl;
+        cout << "Init Succ" << "\n" << flush;
         #endif
         
         return 0;
@@ -104,7 +97,7 @@ namespace GPIO
         }
 
         #ifdef __DEBUG__
-        std::cout << "digitalWrite put: " << Status << " in: " << Pin << std::endl;
+        cout << "digitalWrite put: " << Status << " in: " << Pin << "\n" << flush;
         #endif
     }
 
@@ -113,7 +106,7 @@ namespace GPIO
         gpioPWM(pin, value);
         
         #ifdef __DEBUG__
-        std::cout << "analogWrite put: " << value << " in: " << pin << std::endl;
+        cout << "analogWrite put: " << value << " in: " << pin << "\n" << flush;
         #endif
     }
 
@@ -145,7 +138,7 @@ namespace GPIO
         gpioServo(this->pin, duty);
 
         #ifdef __DEBUG__
-        std::cout << "Servo put: " << duty << " from : " << angle << std::endl;
+        cout << "Servo put: " << duty << " from : " << angle << "\n" << flush;
         #endif
     }
     
@@ -225,35 +218,31 @@ namespace GPIO
         return serDataAvailable(this->handle);
     }
     
-    
     int Serial_termios::begin(int baud)
     {
-        std::cout << "Enter >> Serial_termios::begin(" << baud << ")" << std::endl;
+        //cout << "Enter >> Serial_termios::begin(" << baud << ")" << "\n" << flush;
         
         char port[] = "/dev/ttyUSB0";        
+        this->handle = open(port, O_RDWR);
         this->baudrate = baud;
-        ::close(3);
-        this->handle = ::open(port, O_RDWR);
-        if(this->handle < 0)
+        
+        if(tcgetattr(this->handle, &this->tty) !=0)
         {
-            std::cout << "Serial Port open error -> Handle: " << this-> handle << " Errno: " << errno << " " << ::strerror(errno) << std::endl;
             return -1;
         }
-        else
-        {
-            std::cout << "Serial port open at " << this->handle << std::endl;
-        }
-        
-    
+
         this->tty.c_cflag &= ~PARENB;
         this->tty.c_cflag &= ~CSTOPB;
         this->tty.c_cflag &= ~CSIZE;
         this->tty.c_cflag |= CS8;
         this->tty.c_cflag &= ~CRTSCTS;
         this->tty.c_cflag |= CREAD | CLOCAL;
-        this->tty.c_cflag &= ~CBAUD;
 
-        this->tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOCTL | ECHOPRT | ECHOKE);
+        this->tty.c_lflag &= ~ICANON;
+        this->tty.c_lflag &= ~ECHO;
+        this->tty.c_lflag &= ~ECHOE;
+        this->tty.c_lflag &= ~ECHONL;
+        this->tty.c_lflag &= ~ISIG;
         this->tty.c_iflag &= ~(IXON | IXOFF | IXANY);
         this->tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
 
@@ -262,9 +251,7 @@ namespace GPIO
 
         this->tty.c_cc[VTIME] = 10;
         this->tty.c_cc[VMIN] = 0;
-        
-    #if defined(TERMIOS)
-        int baud_termios;        
+        int baud_termios;
         switch(this->baudrate)
         {
             case BAUDRATE4800:
@@ -282,53 +269,24 @@ namespace GPIO
         }
         cfsetispeed(&tty, baud_termios);
         cfsetospeed(&tty, baud_termios);
-
-        
-        if(::tcsetattr(this->handle, TCSANOW, &(this->tty)) != 0)
-        {
-            std::cout << "Serial config set err " << errno << " " << ::strerror(errno) << std::endl;
+        cout << "Set Baudrate " << baud_termios << endl;
+        //cout << "Return >> Serial_termios::begin(" << baud << ")" << "\n" << flush;
+        int flag = tcsetattr(this->handle, TCSANOW, &(this->tty));        
+        if(flag == 0)
+            return this->handle;
+        else
             return -1;
-        }
-        if(::tcgetattr(this->handle, &(this->tty)))
-        {
-            std::cout << "Conf get err" << std::endl;
-            return -1;
-        }
-
-    #elif defined(TERMIOS2)
-        ::ioctl(this->handle, TCGETS2, &(this->tty));
-        this->tty.c_cflag &= ~CBAUD;
-        this->tty.c_cflag |= CBAUDEX;
-        this->tty.c_ispeed = this->baudrate;
-        this->tty.c_ospeed = this->baudrate;
-        if(::ioctl(this->handle, TCSETS2, &(this->tty)))
-        {
-            std::cout << "Serial config set err " << errno << " " << ::strerror(errno) << std::endl;
-            return -1;
-        }
-        if(::ioctl(this->handle, TCGETS2, &(this->tty)))
-        {
-            std::cout << "Conf get err" << std::endl;
-            return -1;
-        }        
-
-    #endif
-
-        std::cout << "Configed baudrate: " << this->tty.c_ispeed << " " << this->tty.c_ospeed << std::endl;
-        //std::cout << "Return >> Serial_termios::begin(" << baud << ")" << std::endl;
-        return this->handle;
-        
         
     }
     void Serial_termios::write(uint8_t val)
     {
         uint8_t buf[0];
         buf[0] = val;
-        this->write(buf, 1);
+        this->write(buf, sizeof(buf));
     }
     void Serial_termios::write(uint8_t *buf, int size)
     {
-        ::write(this->handle, buf, size*sizeof(uint8_t));
+        ::write(this->handle, (char*)buf, size*sizeof(uint8_t));
     }
     uint8_t Serial_termios::read()
     {
@@ -338,49 +296,57 @@ namespace GPIO
     }
     int Serial_termios::read(uint8_t *buf, int size)
     {
-        return ::read(this->handle, (char*)buf, size*sizeof(uint8_t));        
+        return ::read(this->handle, (char*)buf, size*sizeof(char));
     }
-    int Serial_termios::available()
+    void Serial_termios::flush()
     {
-        int bytes = 0;
-        int itr = 0;
-        while(bytes == 0 && itr < 1000000)
+        uint8_t buf[0];
+        while(true)
         {
-            ::ioctl(this->handle, FIONREAD, &bytes);
-            itr++;
+            int len = ::read(this->handle, (char*)buf, sizeof(uint8_t));
+            if(len == 0)
+                break;
         }
-        //std::cout << "len " << bytes << std::endl;
-        //std::cout << itr << std::endl;
-        //uint8_t buf[1000];
-        //bytes = this->read(buf, 1000);
-        return bytes;
     }
-    
+    #ifdef STD
+    std::string Serial_termios::print()
+    {
+        uint8_t buf[255] = {0};
+        ::read(this->handle, (char*)buf, sizeof(buf));
+        std::string str((char*)buf);
+        return str;        
+    }
     std::string Serial_termios::readline()
     {
-        uint8_t buf[256] ={0,};
-        /*int len = 0;
-        while(this->available() != 0)
-        {
-            len += this->read(buf+len, 256);
-            std::cout << len << std::endl;
-        }
-        buf[len] = 0;*/
-        int len = this->read(buf, 256);
-        //buf[len] = 0;
-        //std::cout << "readline len " << len << std::endl;
-        return std::string((char*)buf);
-    }
-    std::string Serial_termios::readlines()
-    {
         std::string str = "";
-        while(this->available() >0)
+        char buf[0];        
+        while(true)
         {
-            str += this->readline();
+            int len = ::read(this->handle, buf, sizeof(char));
+            //cout << "len " << len << "\n" << flush;
+            if(len != 0)
+            {
+                str += string(buf);
+            }
+            else
+                break;
         }
-        return str;
-    }
+        return str;        
 
+    }
+    #endif
+    int Serial_termios::available()
+    {
+        int bytes = fcntl(this->handle, F_SETFL, FNDELAY);
+        //::ioctl(this->handle, FIONREAD, &bytes);
+        //uint8_t buf[1024];
+        //bytes = this->read(buf, 1024);
+        return bytes;
+    }
+    void Serial_termios::close()
+    {
+        ::close(this->handle);
+    }
         
 }
 
