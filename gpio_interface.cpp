@@ -32,45 +32,50 @@ using namespace std;
 
 namespace GPIO
 {    
-    void init_gpio()
+    int init_gpio()
     {
         if(GPIO::gpio_state == GPIO::GPIO_RDY)
         {
             #ifdef __DEBUG__
             std::cout << "Already init" << std::endl;
             #endif
-
-            
-            return;
+                        
         }
-        if (gpioCfgClock(5,1,0) < 0)
+        else
         {
-            GPIO::gpio_state = GPIO::GPIO_ERR;
+            if (gpioCfgClock(5,1,0) < 0)
+            {                
+                #ifdef __DEBUG__
+                std::cout << "Clock Fail" << std::endl;
+                #endif
 
-            #ifdef __DEBUG__
-            std::cout << "Clock Fail" << std::endl;
-            #endif
+                GPIO::gpio_state = GPIO::GPIO_ERR;
+
+            }
+            else
+            {
+                if (gpioInitialise() < 0)
+                {                    
+                    #ifdef __DEBUG__
+                    std::cout << "Init Fail" << std::endl;
+                    #endif
+
+                    GPIO::gpio_state = GPIO::GPIO_ERR;
+                    
+                }
+                else
+                {
+                    #ifdef __DEBUG__
+                    std::cout << "Init Succ" << std::endl;
+                    #endif
+                    
+                    GPIO::gpio_state = GPIO::GPIO_RDY;
+                }
+                
+            }
             
-            return;
         }
-        if (gpioInitialise() < 0)
-        {
-            GPIO::gpio_state = GPIO::GPIO_ERR;
-
-            #ifdef __DEBUG__
-            std::cout << "Init Fail" << std::endl;
-            #endif
-
-            return;
-        }                
-
-        #ifdef __DEBUG__
-        std::cout << "Init Succ" << std::endl;
-        #endif
-        
-        GPIO::gpio_state = GPIO::GPIO_RDY;
-        
-        return;
+        return GPIO::gpio_state;
         
     }
 
@@ -78,6 +83,8 @@ namespace GPIO
     {
         if(GPIO::gpio_state == GPIO::GPIO_RDY)
             gpioSetMode(Pin, Mode);
+        else
+            throw GPIO::gpio_state;
     }
 
     int digitalRead(int Pin)
@@ -95,6 +102,12 @@ namespace GPIO
             }
 
         }
+        else
+        {
+            throw GPIO::gpio_state;
+            return -1;
+        }
+
         
     }
 
@@ -116,6 +129,8 @@ namespace GPIO
             std::cout << "digitalWrite put: " << Status << " in: " << Pin << std::endl;
             #endif
         }
+        else
+            throw GPIO::gpio_state;
     }
 
     void analogWrite(int pin, int value)
@@ -128,6 +143,8 @@ namespace GPIO
             std::cout << "analogWrite put: " << value << " in: " << pin << std::endl;
             #endif
         }
+        else
+            throw GPIO::gpio_state;
     }
 
     

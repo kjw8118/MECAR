@@ -37,7 +37,7 @@ namespace GPIO
 
     static int gpio_state = GPIO::GPIO_OFF;
 
-    void init_gpio();
+    int init_gpio();
 
     void pinMode(int Pin, int Mode);
 
