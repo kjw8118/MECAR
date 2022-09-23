@@ -147,7 +147,29 @@ namespace GPIO
             throw GPIO::gpio_state;
     }
 
-    
+    void attachInterrupt(int pin, void* ISR, int mode)
+    {
+        if(GPIO::gpio_state == GPIO::GPIO_RDY)
+        {
+            switch(mode)
+            {
+                case GPIO::RISING:
+                    gpioSetISRFunc(pin, RISING_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                case GPIO::FALLING:
+                    gpioSetISRFunc(pin, FALLING_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                case GPIO::CHANGE:
+                    gpioSetISRFunc(pin, EITHER_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                default:
+                    throw GPIO::gpio_state;
+                    break;
+            }            
+        }
+        else
+            throw GPIO::gpio_state;
+    }
     
     void Servo::attach(int pin)
     {

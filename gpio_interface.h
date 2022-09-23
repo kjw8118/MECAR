@@ -32,6 +32,9 @@ namespace GPIO
         INPUT = PI_INPUT,
         HIGH = 1,
         LOW = 0,
+        CHANGE = 1,
+        FALLING = 2,
+        RISING = 3,
 
     };
 
@@ -47,6 +50,8 @@ namespace GPIO
 
     void analogWrite(int pin, int value);
 
+    void attachInterrupt(int pin, void* ISR, int mode);
+    
     class Servo
     {
     private:
