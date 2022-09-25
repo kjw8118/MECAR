@@ -1,5 +1,7 @@
 #include "gpio_interface.h"
 
+#include <functional>
+
 #define __DEBUG__
 #ifdef __DEBUG__
 #include <iostream>
@@ -147,7 +149,7 @@ namespace GPIO
             throw GPIO::gpio_state;
     }
 
-    void attachInterrupt(int pin, void* ISR, int mode)
+    void attachInterrupt(int pin, void (*ISR)(), int mode)
     {
         if(GPIO::gpio_state == GPIO::GPIO_RDY)
         {
@@ -170,6 +172,70 @@ namespace GPIO
         else
             throw GPIO::gpio_state;
     }
+    
+    /*void attachInterrupt(int pin, std::function<void()> ISR, int mode)
+    {
+        
+        int i = 0;
+        std::cout << "attachInterrupt " << i++ << std::endl;
+        
+        std::cout << "attachInterrupt " << i++ << std::endl;
+        auto ppISR = ISR.target<void(*)()>();
+        std::cout << "attachInterrupt " << i++ << std::endl;
+        if(ppISR == nullptr)
+        {
+            std::cout << "attachInterrupt nullptr" << std::endl;    
+        }
+        std::cout << "attachInterrupt before" << std::endl;    
+        void (*pISR)() = *ppISR;
+        std::cout << "attachInterrupt " << i++ << std::endl;
+        std::cout << "attachInterrupt " << i++ << std::endl;
+        if(GPIO::gpio_state == GPIO::GPIO_RDY)
+        {
+            switch(mode)
+            {
+                case GPIO::RISING:
+                    gpioSetISRFunc(pin, RISING_EDGE, 1, (gpioISRFunc_t)(pISR));
+                    break;
+                case GPIO::FALLING:
+                    gpioSetISRFunc(pin, FALLING_EDGE, 1, (gpioISRFunc_t)(pISR));
+                    break;
+                case GPIO::CHANGE:
+                    gpioSetISRFunc(pin, EITHER_EDGE, 1, (gpioISRFunc_t)(pISR));
+                    break;
+                default:
+                    throw GPIO::gpio_state;
+                    break;
+            }            
+        }
+        else
+            throw GPIO::gpio_state;
+    }*/
+
+    /*template <class T>
+    void attachInterrupt(int pin, void (T::*ISR)(), int mode)
+    {
+        if(GPIO::gpio_state == GPIO::GPIO_RDY)
+        {
+            switch(mode)
+            {
+                case GPIO::RISING:
+                    gpioSetISRFunc(pin, RISING_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                case GPIO::FALLING:
+                    gpioSetISRFunc(pin, FALLING_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                case GPIO::CHANGE:
+                    gpioSetISRFunc(pin, EITHER_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                default:
+                    throw GPIO::gpio_state;
+                    break;
+            }            
+        }
+        else
+            throw GPIO::gpio_state;
+    }*/
     
     void Servo::attach(int pin)
     {
@@ -292,6 +358,8 @@ namespace GPIO
         {
             return i2cReadByte(this->handle);
         }
+        else
+            return 0;
     }
     void Wire::readBytes(uint8_t *buf, int size)
     {
@@ -306,6 +374,8 @@ namespace GPIO
         {
             return i2cReadByteData(this->handle, reg_addr);
         }
+        else
+            return 0;
     }
 
     int Serial::begin(int baud)
@@ -357,6 +427,8 @@ namespace GPIO
         {
             return serReadByte(this->handle);
         }
+        else
+            return 0;
     }
     int Serial::read(uint8_t *buf, int size)
     {
@@ -364,6 +436,8 @@ namespace GPIO
         {
             return serRead(this->handle, (char*)buf, size);
         }
+        else
+            return 0;
     }
     int Serial::available()
     {
@@ -371,6 +445,8 @@ namespace GPIO
         {
             return serDataAvailable(this->handle);
         }
+        else
+            return 0;
     }
     
     
@@ -510,6 +586,8 @@ namespace GPIO
             this->read(buf, 1);
             return buf[0];
         }
+        else
+            return 0;
     }
     int Serial_termios::read(uint8_t *buf, int size)
     {
@@ -517,6 +595,8 @@ namespace GPIO
         {
             return ::read(this->handle, (char*)buf, size*sizeof(uint8_t));
         }
+        else
+            return 0;
     }
     int Serial_termios::available()
     {
@@ -535,6 +615,8 @@ namespace GPIO
             //bytes = this->read(buf, 1000);
             return bytes;
         }
+        else
+            return 0;
     }
     
     std::string Serial_termios::readline()
@@ -570,6 +652,34 @@ namespace GPIO
 
         
 }
+
+/*template <class T>
+namespace GPIO
+{
+    void attachInterrupt(int pin, void (T::*ISR)(), int mode)
+    {
+        if(GPIO::gpio_state == GPIO::GPIO_RDY)
+        {
+            switch(mode)
+            {
+                case GPIO::RISING:
+                    gpioSetISRFunc(pin, RISING_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                case GPIO::FALLING:
+                    gpioSetISRFunc(pin, FALLING_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                case GPIO::CHANGE:
+                    gpioSetISRFunc(pin, EITHER_EDGE, 1, (gpioISRFunc_t)(ISR));
+                    break;
+                default:
+                    throw GPIO::gpio_state;
+                    break;
+            }            
+        }
+        else
+            throw GPIO::gpio_state;
+    }
+}*/
 
 #endif
 

@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <string>
 
+#include <functional>
+
 #define TERMIOS2
 #if defined(TERMIOS)
 #include <termios.h>
@@ -50,8 +52,15 @@ namespace GPIO
 
     void analogWrite(int pin, int value);
 
-    void attachInterrupt(int pin, void* ISR, int mode);
+    void attachInterrupt(int pin, void (*ISR)(), int mode);
     
+    //void attachInterrupt(int pin, std::function<void()> ISR, int mode);
+    
+    //template<typename T>
+    //void attachInterrupt(int pin, T ISR, int mode);
+    //template <class T>
+    //void attachInterrupt(int pin, void (T::*ISR)(), int mode);
+
     class Servo
     {
     private:
@@ -167,6 +176,12 @@ namespace GPIO
 
         
 }
+
+/*template <class T>
+namespace GPIO
+{    
+    void attachInterrupt(int pin, void (T::*ISR)(), int mode);
+}*/
 
 #endif
 
