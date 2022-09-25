@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(MECAR VERSION 0.1.0)
 
-set(CMAKE_CXX_STANDARD 20)
+#set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "-std=c++2a")
 
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 1)
@@ -18,6 +19,7 @@ set(SOURCES
     front_radar.cpp
     front_camera.cpp
     lidar.cpp
+    speedometer.cpp
     )
 
     # Find the path to the pigpio includes.
