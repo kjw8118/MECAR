@@ -3,13 +3,27 @@
 #include <limits.h>
 #include <cmath>
 #include <ctime>
+#include <functional>
 
-double Speedometer::get_time()
+#include <iostream>
+
+
+int Speedometer::pinA = 0;
+int Speedometer::pinB = 0;
+int Speedometer::counter = 0;
+
+void Speedometer::set_init_time()
 {
-    struct timespec ct;
-    clock_gettime(CLOCK_MONOTONIC, &ct);
-    return (double)(ct.tv_sec + ct.tv_nsec)/1000;
+    clock_gettime(CLOCK_MONOTONIC, &(this->ct0));
 }
+
+double Speedometer::get_lead_time_ms()
+{
+    clock_gettime(CLOCK_MONOTONIC, &(this->ct1));
+    
+    return double((this->ct1.tv_sec - this->ct0.tv_sec)*1000 + (this->ct1.tv_nsec - this->ct0.tv_nsec)/1000000);
+}
+
 void Speedometer::update(int counter_past, int counter_current)
 {
     int counter_diff;
@@ -28,54 +42,63 @@ void Speedometer::update(int counter_past, int counter_current)
     {
         counter_diff = counter_current - counter_past;
     }
+    double kv = 0.05;
     this->displacement += counter_diff*this->radius;
-    this->speed = counter_diff*this->radius/this->period;
+    this->speed = std::round((counter_diff*this->radius/this->period*kv + this->speed*(1-kv))*10)/10;
 }
 void Speedometer::inc_encoder()
-{
-    if(GPIO::digitalRead(pinA) == GPIO::digitalRead(this->pinB))
+{    
+    if(GPIO::digitalRead(Speedometer::pinA) == GPIO::digitalRead(Speedometer::pinB))
     {            
-        this->counter++;
+        Speedometer::counter++;
     }
 }
 void Speedometer::dec_encoder()
 {
-    if(GPIO::digitalRead(this->pinA) == GPIO::digitalRead(this->pinB))
+    if(GPIO::digitalRead(Speedometer::pinA) == GPIO::digitalRead(Speedometer::pinB))
     {
-        this->counter--;
+        Speedometer::counter--;
     }
 }
 
-int Speedometer::init(int pinA, int piB, double period)
+int Speedometer::init(int pinA, int pinB, double period)
 {
-    this->pinA = pinA;
-    this->pinB = pinB;
+    Speedometer::pinA = pinA;
+    Speedometer::pinB = pinB;
+    this->period = period;
+    
     GPIO::init_gpio();
-    GPIO::pinMode(this->pinA, GPIO::INPUT);
-    GPIO::pinMode(this->pinB, GPIO::INPUT);
-    GPIO::attachInterrupt(this->pinA, (void*)this->f_inc_encoder, GPIO::CHANGE);
-    GPIO::attachInterrupt(this->pinB, (void*)this->f_dec_encoder, GPIO::CHANGE);
-    //GPIO::attachInterrupt(this->pinA, (void*)&(Speedometer::inc_encoder), GPIO::CHANGE);
-    //GPIO::attachInterrupt(this->pinB, (void*)&(Speedometer::dec_encoder), GPIO::CHANGE);
-
+    GPIO::pinMode(Speedometer::pinA, GPIO::INPUT);
+    GPIO::pinMode(Speedometer::pinB, GPIO::INPUT);
+    
+    
+    GPIO::attachInterrupt(Speedometer::pinA, Speedometer::inc_encoder, GPIO::CHANGE);
+    GPIO::attachInterrupt(Speedometer::pinB, Speedometer::dec_encoder, GPIO::CHANGE);
+    
+    return 0;
 }
 void Speedometer::run()
 {
-    this->init(10, 11, 0.01);
-    int counter_past = this->counter;
-    double t0 = this->get_time();
+    this->init(6, 5, 0.01);
+    int counter_past = Speedometer::counter;
+    this->set_init_time();
+    
+    
     while(true)
-    {
-        double t1 = this->get_time();
-        while(t1 - t0 < this->period) 
+    {        
+        double t = this->get_lead_time_ms();                
+        while(t < this->period*1000) 
         {
-            t1 = this->get_time();
+            t = this->get_lead_time_ms();            
         }
-        int counter_current = this->counter;
+        
+        int counter_current = Speedometer::counter;
 
         this->update(counter_past, counter_current);
+        std::cout << "Cnt: " << Speedometer::counter << " Speed: " << this->speed << std::endl;
         
-        t0 = t1;
+        
+        this->set_init_time();
         counter_past = counter_current;
         
     }
