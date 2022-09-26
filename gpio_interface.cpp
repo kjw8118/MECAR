@@ -2,6 +2,11 @@
 
 #include <functional>
 
+#include <limits.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "linux/joystick.h"
+
 #define __DEBUG__
 #ifdef __DEBUG__
 #include <iostream>
@@ -650,6 +655,57 @@ namespace GPIO
         }
     }
 
+    void Joystick::init()
+    {
+        this->js_fd = ::open("/dev/input/js0", O_RDONLY);
+    }
+    void Joystick::update()
+    {
+        ::read(this->js_fd, &(this->js), sizeof(struct js_event));
+        unsigned char type = this->js.type;
+        unsigned char num = this->js.number;
+        signed short val = this->js.value;
+        switch(type & ~JS_EVENT_INIT)
+        {
+            case JS_EVENT_AXIS:
+                this->axis[num] = val;
+                break;
+            case JS_EVENT_BUTTON:
+                this->btn[num] = val;
+                break;
+            default:
+                break;
+        }
+
+    }
+    double Joystick::get_axis(unsigned char AXIS_ID)
+    {
+        if(AXIS_ID < Joystick::JOYSTICK_ID::LS_X || AXIS_ID > Joystick::JOYSTICK_ID::RT)
+        {
+            return 0;
+        }
+        else
+            return (double)(this->axis[AXIS_ID]/INT16_MAX);
+    }
+    bool Joystick::get_button(unsigned char BUTTON_ID)
+    {
+        if(BUTTON_ID < Joystick::JOYSTICK_ID::A || BUTTON_ID > Joystick::JOYSTICK_ID::RS)
+        {            
+            return false;
+        }
+        else
+            return this->btn[BUTTON_ID];
+    }
+    /*void Joystick::run()
+    {
+        this->init();
+
+        while(true)
+        {
+            this->update();
+            std::cout << this->get_axis(this->LS_X) << " " << this->get_axis(this->LS_Y) << std::endl;
+        }
+    }*/
         
 }
 

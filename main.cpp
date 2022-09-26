@@ -2,11 +2,12 @@
 #include <thread>
 using namespace std;
 
-#include "powertrain.h"
-#include "front_camera.h"
-#include "front_radar.h"
-#include "lidar.h"
-#include "speedometer.h"
+//#include "powertrain.h"
+//#include "front_camera.h"
+//#include "front_radar.h"
+//#include "lidar.h"
+//#include "speedometer.h"
+#include "handle.h"
 
 //#include <functional>
 
@@ -62,12 +63,14 @@ int main()
     //thread cam_thread = thread(&FrontCamera::run, FrontCamera());
     //thread radar_thread = thread(&FrontRadar::run, FrontRadar());
     //thread lidar_thread = thread(&LiDAR::run, LiDAR());
-    thread speedometer_thread = thread(&Speedometer::run, Speedometer());
+    //thread speedometer_thread = thread(&Speedometer::run, Speedometer());
+    thread handle_thread = thread(&Handle::run, Handle());
 
     //pt_thread.join();
     //cam_thread.join();
     //radar_thread.join();
-    speedometer_thread.join();
+    //speedometer_thread.join();
+    handle_thread.join();
 
     //TEST t1;
     //std::cout << "Start" << std::endl;
@@ -123,7 +126,7 @@ int main()
         usleep(1000);
     }*/
 
-
+    
     cout << "Main Exit" << endl;
     
         
