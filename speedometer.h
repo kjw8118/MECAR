@@ -3,6 +3,8 @@
 
 #include "gpio_interface.h"
 
+#include "timer.h"
+
 #include <functional>
 #include <cmath>
 
@@ -18,9 +20,10 @@ private:
     double displacement = 0;
     double speed = 0;    
     double acceleration = 0;
-    struct timespec ct0, ct1;
-    void set_init_time();
-    double get_lead_time_ms();
+    //struct timespec ct0, ct1;
+    Timer timer;
+    //void set_init_time();
+    //double get_lead_time_ms();
     void update(int counter_past, int counter_current);
     static void inc_encoder();
     static void dec_encoder();
