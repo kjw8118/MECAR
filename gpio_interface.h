@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <string>
 
+
+
 #include <functional>
 
 #define TERMIOS2
@@ -12,8 +14,6 @@
 #elif defined(TERMIOS2)
 #include <asm/termbits.h>
 #endif
-
-#include "linux/joystick.h"
 
 #define RASPBERRYPI
 
@@ -174,42 +174,7 @@ namespace GPIO
     };
     
 
-    class Joystick
-    {
-    private:
-        int js_fd = -1;
-        double axis[6] = {0,};
-        bool btn[11] = {false,};
-        struct js_event js;        
-    public:
-        enum JOYSTICK_ID
-        {
-            LS_X = 0,
-            LS_Y = 1,
-            LT = 2,
-            RS_X = 3,
-            RS_Y = 4,
-            RT = 5,
-            A = 0,
-            B = 1,
-            X = 2,
-            Y = 3,
-            LB = 4,
-            RB = 5,
-            BK = 6,
-            ST = 7,
-            HM = 8,
-            LS = 9,
-            RS = 10,
-        };
-        //Joystick(/* args */);
-        //~Joystick();
-        void init();
-        void update();
-        double get_axis(unsigned char AXIS_ID);
-        bool get_button(unsigned char BUTTON_ID);
-        //void run();        
-    };    
+    
 
         
 }

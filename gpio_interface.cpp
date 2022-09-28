@@ -1,11 +1,14 @@
 #include "gpio_interface.h"
 
+#include <map>
+
 #include <functional>
 
 #include <limits.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "linux/joystick.h"
+
+#include <thread>
 
 #define __DEBUG__
 #ifdef __DEBUG__
@@ -37,16 +40,18 @@ using namespace std;
 #ifdef RASPBERRYPI
 #include "pigpio.h"
 
+
 namespace GPIO
 {    
-    int init_gpio()
+
+    void init_gpio_thread()
     {
         if(GPIO::gpio_state == GPIO::GPIO_RDY)
         {
             #ifdef __DEBUG__
             std::cout << "Already init" << std::endl;
             #endif
-                        
+            
         }
         else
         {
@@ -82,9 +87,21 @@ namespace GPIO
             }
             
         }
-        return GPIO::gpio_state;
+        //return GPIO::gpio_state;
         
     }
+
+    int init_gpio()
+    {
+        if(GPIO::gpio_state != GPIO::GPIO_RDY)
+        {
+            thread gpio_thread = std::thread(GPIO::init_gpio_thread);
+            gpio_thread.join();
+        }
+        return GPIO::gpio_state;
+
+    }
+
 
     void pinMode(int Pin, int Mode)
     {
@@ -133,7 +150,7 @@ namespace GPIO
             }
 
             #ifdef __DEBUG__
-            std::cout << "digitalWrite put: " << Status << " in: " << Pin << std::endl;
+            //std::cout << "digitalWrite put: " << Status << " in: " << Pin << std::endl;
             #endif
         }
         else
@@ -147,7 +164,7 @@ namespace GPIO
             gpioPWM(pin, value);
             
             #ifdef __DEBUG__
-            std::cout << "analogWrite put: " << value << " in: " << pin << std::endl;
+            //std::cout << "analogWrite put: " << value << " in: " << pin << std::endl;
             #endif
         }
         else
@@ -291,7 +308,7 @@ namespace GPIO
             gpioServo(this->pin, duty);
 
             #ifdef __DEBUG__
-            std::cout << "Servo put: " << duty << " from : " << angle << std::endl;
+            //std::cout << "Servo put: " << duty << " from : " << angle << std::endl;
             #endif
         }
     }
@@ -641,6 +658,8 @@ namespace GPIO
             //std::cout << "readline len " << len << std::endl;
             return std::string((char*)buf);
         }
+        else
+            return "";
     }
     std::string Serial_termios::readlines()
     {
@@ -653,59 +672,11 @@ namespace GPIO
             }
             return str;
         }
-    }
-
-    void Joystick::init()
-    {
-        this->js_fd = ::open("/dev/input/js0", O_RDONLY);
-    }
-    void Joystick::update()
-    {
-        ::read(this->js_fd, &(this->js), sizeof(struct js_event));
-        unsigned char type = this->js.type;
-        unsigned char num = this->js.number;
-        signed short val = this->js.value;
-        switch(type & ~JS_EVENT_INIT)
-        {
-            case JS_EVENT_AXIS:
-                this->axis[num] = val;
-                break;
-            case JS_EVENT_BUTTON:
-                this->btn[num] = val;
-                break;
-            default:
-                break;
-        }
-
-    }
-    double Joystick::get_axis(unsigned char AXIS_ID)
-    {
-        if(AXIS_ID < Joystick::JOYSTICK_ID::LS_X || AXIS_ID > Joystick::JOYSTICK_ID::RT)
-        {
-            return 0;
-        }
         else
-            return (double)(this->axis[AXIS_ID]/INT16_MAX);
+            return "";
     }
-    bool Joystick::get_button(unsigned char BUTTON_ID)
-    {
-        if(BUTTON_ID < Joystick::JOYSTICK_ID::A || BUTTON_ID > Joystick::JOYSTICK_ID::RS)
-        {            
-            return false;
-        }
-        else
-            return this->btn[BUTTON_ID];
-    }
-    /*void Joystick::run()
-    {
-        this->init();
 
-        while(true)
-        {
-            this->update();
-            std::cout << this->get_axis(this->LS_X) << " " << this->get_axis(this->LS_Y) << std::endl;
-        }
-    }*/
+    
         
 }
 
