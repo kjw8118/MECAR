@@ -2,7 +2,10 @@
 #define __POWERTRAIN_H__
 
 #include "gpio_interface.h"
-using namespace GPIO;
+
+#include "timer.h"
+
+//using namespace GPIO;
 
 class Propulsion
 {
@@ -11,9 +14,9 @@ private:
     int PIN_BW;
     int gear = GEAR_P;
     double torque = 0;
-    double acc_ratio = 0.1;
-    double dec_ratio = 0.2;
-    double cst_ratio = 5;
+    double acc_ratio = 0.01;
+    double dec_ratio = 0.02;
+    double cst_ratio = 0.5;
 
 public:
     enum
@@ -33,7 +36,7 @@ class MDPS
 {
 private:
     int pin;
-    Servo servo;
+    GPIO::Servo servo;
     int deg_left = 45;
     int deg_mid = 90;
     int deg_right = 135;
@@ -50,6 +53,7 @@ class Powertrain
 private:
     Propulsion engine;
     MDPS mdps;
+    Timer timer;
 
 public:    
     Powertrain();
