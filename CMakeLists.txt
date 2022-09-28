@@ -20,7 +20,8 @@ set(SOURCES
     front_camera.cpp
     lidar.cpp
     speedometer.cpp
-    handle.cpp
+    joystick.cpp
+    timer.cpp
     )
 
     # Find the path to the pigpio includes.
