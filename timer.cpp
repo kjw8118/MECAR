@@ -26,6 +26,7 @@ double Timer::lead_ms()
 void Timer::wait_until_ms(int ms)
 {
     while(this->lead_ms() < ms) {};
+    this->set_t0_ms();
 }
 
 bool Timer::flag_when_ms(int ms)
