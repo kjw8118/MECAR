@@ -27,3 +27,17 @@ void Timer::wait_until_ms(int ms)
 {
     while(this->lead_ms() < ms) {};
 }
+
+bool Timer::flag_when_ms(int ms)
+{
+    if(this->lead_ms() > ms)
+        return true;
+    else
+        return false;
+}
+
+unsigned int Timer::getTick_ms()
+{
+    clock_gettime(CLOCK_MONOTONIC, &(this->ct2));
+    return (unsigned int)((this->ct2.tv_sec - this->ct.tv_sec)*1000 + (this->ct2.tv_nsec - this->ct.tv_nsec)/1000000);
+}
