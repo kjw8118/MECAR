@@ -8,7 +8,11 @@
 #include <string>
 
 namespace Communication
-{    
+{
+    enum CONSTANT
+    {
+        TCP_DEFAULT_PORT = 8118,
+    };
     class TCP_Server
     {
     private:
@@ -27,7 +31,7 @@ namespace Communication
         void send(std::string msg);
         std::pair<int, std::string> receive();
         void run();
-        //void receive();
+        
         
     };
 
@@ -38,8 +42,10 @@ namespace Communication
     public:
         TCP_Client();
         ~TCP_Client();
+        void connect(std::string address);
         void connect(std::string address, int port);
         void receive();
+        void request();
         void run();
 
     };

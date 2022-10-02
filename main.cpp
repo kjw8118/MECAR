@@ -32,15 +32,48 @@ int main()
     //speedometer_thread.join();
     //joystick_thread.join();
 
+    //Communication::TCP_Server server;
+    Communication::TCP_Client client;
+
+    //server.begin();
+    //server.connect();
+    
+    client.connect("192.168.0.36", 8118);
+
+    std::cout << "Now enter loop" << std::endl;
+    while(true)
+    {
+        client.request();
+        sleep(1);
+    }
+
+
+    /*
     Communication::TCP_Server server;
 
-    server.run();
+    server.begin();
+    server.connect();
 
     while(true)
     {
-        
-        sleep(1);
-    }
+        auto [str_len, msg] = server.receive();
+        if(str_len < 0)
+        {
+            std::cout << "Error received" << std::endl;            
+            break;
+        }
+        else
+        {
+            if(str_len > 0 )
+            {
+                std::cout << msg << std::endl;
+            }
+            else
+            {
+                server.connect();
+            }
+        }        
+    }*/
     
 
 
