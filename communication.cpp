@@ -14,6 +14,12 @@ Communication::TCP_Server::TCP_Server()
     else
         this->status = Communication::COM_OK;*/
 }
+Communication::TCP_Server::~TCP_Server(){};
+
+void Communication::TCP_Server::begin()
+{
+    this->begin(0);
+}
 
 void Communication::TCP_Server::begin(int port)
 {    
@@ -26,7 +32,6 @@ void Communication::TCP_Server::begin(int port)
     std::cout << "Server Address: " << INADDR_ANY << std::endl;    
 
 }
-Communication::TCP_Server::~TCP_Server(){};
 
 void Communication::TCP_Server::connect()
 {
@@ -52,6 +57,45 @@ void Communication::TCP_Server::send(std::string msg)
     {
         //char msg[] = "Hello world\n";
         ::write(client_socket, msg, msg.length());
+    }
+}
+
+std::pair<int, std::string> Communication::TCP_Server::receive()
+{
+    char msg[30];
+    int str_len;
+    std::string msg_ret = "";
+    str_len = ::read(this->socket, msg, sizeof(msg));
+    if(str_len > 0)
+    {
+        std::string msg_ret(msg);
+        return std::make_pair(str_len, msg_ret);
+    }
+    else
+    {
+        std::string msg_ret = "";
+        return std::make_pair(str_len, msg_ret);
+    }
+
+}
+
+void Communication::TCP_Server::run()
+{
+    this->begin();
+    this->connect();
+
+    while(true)
+    {
+        auto [str_len, msg] = this->receive();
+        if(str_len < 0)
+            break;
+        else
+        {
+            if(str_len > 0 )
+            {
+                std::cout << msg << std::endl;
+            }
+        }
     }
 }
 
@@ -86,4 +130,9 @@ void Communication::TCP_Client::receive()
     str_len = ::read(this->socket, msg, sizeof(msg));
 
     std::cout << msg << std::endl;
+}
+
+void Communication::TCP_Client::run()
+{
+
 }

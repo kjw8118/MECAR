@@ -8,7 +8,7 @@
 #include <string>
 
 namespace Communication
-{
+{    
     class TCP_Server
     {
     private:
@@ -20,10 +20,13 @@ namespace Communication
     public:
         TCP_Server();
         ~TCP_Server();
+        void begin();
         void begin(int port);
         void connect();
         void connect(int q_size);
         void send(std::string msg);
+        std::pair<int, std::string> receive();
+        void run();
         //void receive();
         
     };
@@ -37,6 +40,7 @@ namespace Communication
         ~TCP_Client();
         void connect(std::string address, int port);
         void receive();
+        void run();
 
     };
 }

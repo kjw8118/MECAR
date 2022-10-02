@@ -32,13 +32,13 @@ int main()
     //speedometer_thread.join();
     //joystick_thread.join();
 
-    Communication::TCP_Client client;
+    Communication::TCP_Server server;
 
-    client.connect();
+    server.run();
 
     while(true)
     {
-        client.receive();
+        
         sleep(1);
     }
     
