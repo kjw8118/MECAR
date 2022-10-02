@@ -11,8 +11,11 @@ using namespace std;
 //#include "speedometer.h"
 //#include "joystick.h"
 
-#include "communication.h"
-#include "unistd.h"
+#include "timer.h"
+
+//#include "communication.h"
+//#include "unistd.h"
+
 
 int main()
 {
@@ -25,18 +28,19 @@ int main()
     //thread lidar_thread = thread(&LiDAR::run, LiDAR());
     //thread speedometer_thread = thread(&Speedometer::run, Speedometer());
     //thread joystick_thread = thread(&Joystick::run, Joystick());
+    thread timer_thread = thread(&Timer::run, Timer());
 
     //pt_thread.join();
     //cam_thread.join();
     //radar_thread.join();
     //speedometer_thread.join();
     //joystick_thread.join();
+    timer_thread.join();
 
-    //Communication::TCP_Server server;
-    Communication::TCP_Client client;
+    //Timer timer;
+    //timer.run();
 
-    //server.begin();
-    //server.connect();
+    /*Communication::TCP_Client client;
     
     client.connect("192.168.0.36", 8118);
 
@@ -45,18 +49,21 @@ int main()
     {
         client.request();
         sleep(1);
-    }
+    }*/
 
 
-    /*
-    Communication::TCP_Server server;
+    
+    /*Communication::TCP_Server server;
+
+    auto func = [](void) { std::cout << "Task" << std::endl;};
+    server.regist_task(func);
 
     server.begin();
     server.connect();
 
     while(true)
-    {
-        auto [str_len, msg] = server.receive();
+    {*/
+        /*auto [str_len, msg] = server.receive();
         if(str_len < 0)
         {
             std::cout << "Error received" << std::endl;            
@@ -72,7 +79,8 @@ int main()
             {
                 server.connect();
             }
-        }        
+        }*/
+        /*server.response();        
     }*/
     
 

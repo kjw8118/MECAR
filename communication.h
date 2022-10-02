@@ -6,6 +6,9 @@
 
 #include <map>
 #include <string>
+#include <functional>
+
+#include <thread>
 
 namespace Communication
 {
@@ -17,10 +20,13 @@ namespace Communication
     {
     private:
         typedef struct sockaddr socket_address_t;
+        
         //int status = Communication::COM_INIT;
         int socket;
         struct sockaddr_in address;
-        std::map<int, socket_address_t> clients;
+        std::map<int, socket_address_t> clients;        
+        std::function<void(void)> service_task;
+        //std::thread service_thread;
     public:
         TCP_Server();
         ~TCP_Server();
@@ -30,6 +36,8 @@ namespace Communication
         void connect(int q_size);
         void send(std::string msg);
         std::pair<int, std::string> receive();
+        void response();        
+        void regist_task(std::function<void(void)> task);
         void run();
         
         

@@ -6,6 +6,9 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#include <thread>
+#include <future>
+
 Communication::TCP_Server::TCP_Server()
 {
     std::cout << "Server socket generated: " << std::flush;
@@ -93,6 +96,32 @@ std::pair<int, std::string> Communication::TCP_Server::receive()
 
 }
 
+
+void Communication::TCP_Server::regist_task(std::function<void(void)> task)
+{
+    this->service_task = task;
+    
+}
+
+void Communication::TCP_Server::response()
+{
+    auto [ret, dummy] = this->receive();
+    if(ret > 0)
+    {
+        //this->service_task();
+        //std::thread service_thread = std::thread(this->service_task);
+        //service_thread.join();
+        //std::cout << "Async start" << std::endl;
+        std::future<void> service_async = std::async(std::launch::async, this->service_task);
+        //service_async.wait();
+    }
+    else if(ret == 0)
+    {
+        this->connect();
+    }
+}
+
+
 void Communication::TCP_Server::run()
 {
     this->begin();
@@ -157,6 +186,7 @@ void Communication::TCP_Client::request()
     int ret = ::write(this->socket, msg, sizeof(msg));
     std::cout << ret << std::endl;
 }
+
 
 void Communication::TCP_Client::run()
 {

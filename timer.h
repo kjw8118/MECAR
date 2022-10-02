@@ -2,16 +2,20 @@
 #define __TIMER_H__
 
 #include <ctime>
+#include "communication.h"
 
 class Timer
 {
 private:
     struct timespec ct, ct0, ct1, ct2;
     unsigned int tick0;
+    Communication::TCP_Server server_port;
+
 
 public:
     Timer()
     {
+        
         clock_gettime(CLOCK_MONOTONIC, &(this->ct));
 
     }    
@@ -21,6 +25,8 @@ public:
     void wait_until_ms(int ms);
     bool flag_when_ms(int ms);
     unsigned int getTick_ms();
+    void print_lead_ms();
+    void run();
     
 };
 
