@@ -22,6 +22,7 @@ set(SOURCES
     speedometer.cpp
     joystick.cpp
     timer.cpp
+    communication.cpp
     )
 
     # Find the path to the pigpio includes.
