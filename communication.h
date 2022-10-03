@@ -16,9 +16,15 @@ namespace Communication
     {
         TCP_DEFAULT_PORT = 8118,
     };
+
+    template<typename T>
+    class Server: public T
+    {
+
+    };
     class TCP_Server
     {
-    private:
+    protected:
         typedef struct sockaddr socket_address_t;
         
         //int status = Communication::COM_INIT;
@@ -43,9 +49,15 @@ namespace Communication
         
     };
 
+    template<typename T>
+    class Client: public T
+    {
+
+    };
+
     class TCP_Client
     {
-    private:
+    protected:
         int socket;
     public:
         TCP_Client();

@@ -13,8 +13,8 @@ using namespace std;
 
 #include "timer.h"
 
-//#include "communication.h"
-//#include "unistd.h"
+#include "communication.h"
+#include "unistd.h"
 
 
 int main()
@@ -40,16 +40,16 @@ int main()
     //Timer timer;
     //timer.run();
 
-    /*Communication::TCP_Client client;
+    Communication::Client<Communication::TCP_Client> client;
     
-    client.connect("192.168.0.36", 8118);
+    client.connect("192.168.0.28", 8118);
 
     std::cout << "Now enter loop" << std::endl;
     while(true)
     {
         client.request();
         sleep(1);
-    }*/
+    }
 
 
     
