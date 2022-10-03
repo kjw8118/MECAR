@@ -48,7 +48,7 @@ bool Timer::flag_when_ms(int ms)
 }
 void Timer::print_lead_ms()
 {
-    sleep(1);
+    sleep(2);
     this->get_t1_ms();
     double ret = double((this->ct1.tv_sec - this->ct0.tv_sec)*1000 + (this->ct1.tv_nsec - this->ct0.tv_nsec)/1000000);
     this->set_t0_ms();
@@ -65,13 +65,12 @@ void Timer::run()
     this->set_t0_ms();
     auto func = std::bind(&Timer::print_lead_ms, this);
     this->server_port.regist_task(func);
-    this->server_port.begin();
-    this->server_port.connect();
-    
+
+    std::thread server_thread(&Communication::Server<Communication::TCP_Server>::run, this->server_port);
     while(true)
     {
-        this->server_port.response();
-        //sleep(1);
-        //std::cout << "Timer loop" << std::endl;
+        //this->server_port.response();
+        sleep(1);
+        std::cout << "Timer task" << std::endl;
     }
 }

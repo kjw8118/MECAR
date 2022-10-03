@@ -129,7 +129,8 @@ void Communication::TCP_Server::run()
 
     while(true)
     {
-        auto [str_len, msg] = this->receive();
+        this->response();
+        /*auto [str_len, msg] = this->receive();
         if(str_len < 0)
             break;
         else
@@ -138,7 +139,7 @@ void Communication::TCP_Server::run()
             {
                 std::cout << msg << std::endl;
             }
-        }
+        }*/
     }
 }
 
