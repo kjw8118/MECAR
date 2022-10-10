@@ -49,7 +49,7 @@ namespace GPIO
         if(GPIO::gpio_state == GPIO::GPIO_RDY)
         {
             #ifdef __DEBUG__
-            std::cout << "Already init" << std::endl;
+            std::cout << "GPIO already init" << std::endl;
             #endif
             
         }
@@ -58,7 +58,7 @@ namespace GPIO
             if (gpioCfgClock(5,1,0) < 0)
             {                
                 #ifdef __DEBUG__
-                std::cout << "Clock Fail" << std::endl;
+                std::cout << "GPIO clock Fail" << std::endl;
                 #endif
 
                 GPIO::gpio_state = GPIO::GPIO_ERR;
@@ -69,7 +69,7 @@ namespace GPIO
                 if (gpioInitialise() < 0)
                 {                    
                     #ifdef __DEBUG__
-                    std::cout << "Init Fail" << std::endl;
+                    std::cout << "GPIO init Fail" << std::endl;
                     #endif
 
                     GPIO::gpio_state = GPIO::GPIO_ERR;
@@ -78,7 +78,7 @@ namespace GPIO
                 else
                 {
                     #ifdef __DEBUG__
-                    std::cout << "Init Succ" << std::endl;
+                    std::cout << "GPIO init Succ" << std::endl;
                     #endif
                     
                     GPIO::gpio_state = GPIO::GPIO_RDY;
@@ -335,9 +335,13 @@ namespace GPIO
                 this->handle = i2cOpen(this->bus, addr, 0);
 
                 this->state = Wire::WIRE_RDY;
+
+                std::cout << "Wire init success " << this->handle << std::endl;
             }
             else
             {
+                std::cout << "Wire Error" << std::endl;
+                while(true){};
                 this->state = Wire::WIRE_ERR;
             }
             
