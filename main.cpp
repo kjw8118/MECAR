@@ -11,8 +11,9 @@ using namespace std;
 //#include "speedometer.h"
 //#include "joystick.h"
 
-//#include "mpu6050.h"
-#include "imu.h"
+#include "mpu6050.h"
+#include "hmc5883l.h"
+//#include "imu.h"
 
 //#include "timer.h"
 
@@ -32,8 +33,9 @@ int main()
     //thread speedometer_thread = thread(&Speedometer::run, Speedometer());
     //thread joystick_thread = thread(&Joystick::run, Joystick());
     //thread timer_thread = thread(&Timer::run, Timer());
-    //thread mpu6050_thread = thread(&MPU6050::run, MPU6050());
-    thread imu_thread = thread(&IMU::run, IMU());
+    thread mpu6050_thread = thread(&MPU6050::run, MPU6050());
+    thread hmc5883l_thread = thread(&HMC5883L::run, HMC5883L());
+    //thread imu_thread = thread(&IMU::run, IMU());
 
     //pt_thread.join();
     //cam_thread.join();
@@ -43,8 +45,9 @@ int main()
     //joystick_thread.join();
     //timer_thread.join();
 
-    //mpu6050_thread.join();
-    imu_thread.join();
+    mpu6050_thread.join();
+    hmc5883l_thread.join();
+    //imu_thread.join();
 
     //Timer timer;
     //timer.run();

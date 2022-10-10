@@ -25,6 +25,7 @@ set(SOURCES
     communication.cpp
     pointcloud.cpp
     mpu6050.cpp
+    hmc5883l.cpp
     imu.cpp
     linearalgebra.cpp
     )
