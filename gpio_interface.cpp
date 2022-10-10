@@ -399,6 +399,13 @@ namespace GPIO
         else
             return 0;
     }
+    void Wire::readReg(uint8_t reg_addr, uint8_t *buf, int size)
+    {
+        if(this->state == Wire::WIRE_RDY)
+        {                        
+            i2cReadI2CBlockData(this->handle, reg_addr, (char*)buf, size);
+        }
+    }
 
     int Serial::begin(int baud)
     {
@@ -598,6 +605,8 @@ namespace GPIO
         if(this->state == Serial_termios::SERIAL_RDY)
         {
             ::write(this->handle, buf, size*sizeof(uint8_t));
+
+            //std::cout << "Write " << (unsigned)buf[0] << " " << (unsigned)buf[1] << "\n";
         }
     }
     uint8_t Serial_termios::read()
@@ -613,9 +622,12 @@ namespace GPIO
     }
     int Serial_termios::read(uint8_t *buf, int size)
     {
-        if(this->state == Serial_termios::SERIAL_RDY)
+        if(this->state == Serial_termios::SERIAL_RDY && this->available() > 0)
         {
-            return ::read(this->handle, (char*)buf, size*sizeof(uint8_t));
+            int ret = ::read(this->handle, (char*)buf, size*sizeof(uint8_t));
+
+            //std::cout << std::hex << "Read " << ret << "\n";
+            return ret;
         }
         else
             return 0;
@@ -626,25 +638,29 @@ namespace GPIO
         {
             int bytes = 0;
             int itr = 0;
-            while(bytes == 0 && itr < 1000000)
+            while(bytes == 0 && itr < 1000)
             {
-                ::ioctl(this->handle, FIONREAD, &bytes);
                 itr++;
+                ::ioctl(this->handle, FIONREAD, &bytes);                
             }
-            //std::cout << "len " << bytes << std::endl;
             //std::cout << itr << std::endl;
             //uint8_t buf[1000];
             //bytes = this->read(buf, 1000);
             return bytes;
         }
         else
+        {
+            
             return 0;
+        }
     }
     
     std::string Serial_termios::readline()
     {
         if(this->state == Serial_termios::SERIAL_RDY)
         {
+            while(this->available() == 0) {};
+            
             uint8_t buf[256] ={0,};
             /*int len = 0;
             while(this->available() != 0)
@@ -654,9 +670,13 @@ namespace GPIO
             }
             buf[len] = 0;*/
             int len = this->read(buf, 256);
+            /*for(int i=0; i<len; i++)
+            {
+                std::cout << i << ", " << (unsigned)buf[i] << "\n";
+            }*/
             //buf[len] = 0;
             //std::cout << "readline len " << len << std::endl;
-            return std::string((char*)buf);
+            return std::string((char*)buf, len);
         }
         else
             return "";

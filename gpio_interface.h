@@ -105,6 +105,7 @@ namespace GPIO
         void writeReg(uint8_t reg_addr, uint8_t val);
         uint8_t readReg(uint8_t reg_addr);
         uint8_t readByte();
+        void readReg(uint8_t reg_addr, uint8_t *buf, int size);
         void readBytes(uint8_t *buf, int size);                
     };
 
