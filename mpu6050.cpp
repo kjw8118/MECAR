@@ -2,8 +2,16 @@
 
 #include "gpio_interface.h"
 
+int cnt = 0;
 
-AccelGyro::AccelGyro(const AccelGyro& origin)
+Vector::Vector(const Vector& origin)
+{
+    this->x = origin.x;
+    this->y = origin.y;
+    this->z = origin.z;
+}
+
+MPU6050_Data::MPU6050_Data(const MPU6050_Data& origin)
 {
     this->ax = origin.ax;
     this->ay = origin.ay;
@@ -58,22 +66,16 @@ void MPU6050::update()
 
     this->i2c.readReg(this->ACCEL_XOUT_H, data_buf, 14);
     
-    this->accelgyro.ax = ((double)((int16_t)(data_buf[0] << 8 | data_buf[1]))/16384*9.81) * ka + this->accelgyro.ax * (1-ka);
-    this->accelgyro.ay = ((double)((int16_t)(data_buf[2] << 8 | data_buf[3]))/16384*9.81) * ka + this->accelgyro.ay * (1-ka);
-    this->accelgyro.az = -((double)((int16_t)(data_buf[4] << 8 | data_buf[5]))/16384*9.81) * ka + this->accelgyro.az * (1-ka);
-    this->accelgyro.tp = ((double)((int16_t)(data_buf[6] << 8 | data_buf[7]))/333.87 + 21)  * kt + this->accelgyro.tp * (1-kt);
-    this->accelgyro.gx = ((double)((int16_t)(data_buf[8] << 8 | data_buf[9]))/131) * kg + this->accelgyro.gx * (1-kg);
-    this->accelgyro.gy = ((double)((int16_t)(data_buf[10] << 8 | data_buf[11]))/131) * kg + this->accelgyro.gy * (1-kg);
-    this->accelgyro.gz = ((double)((int16_t)(data_buf[12] << 8 | data_buf[13]))/131) * kg + this->accelgyro.gz * (1-kg);
+    this->data.ax = ((double)((int16_t)(data_buf[0] << 8 | data_buf[1]))/16384*9.81) * ka + this->data.ax * (1-ka);
+    this->data.ay = ((double)((int16_t)(data_buf[2] << 8 | data_buf[3]))/16384*9.81) * ka + this->data.ay * (1-ka);
+    this->data.az = -((double)((int16_t)(data_buf[4] << 8 | data_buf[5]))/16384*9.81) * ka + this->data.az * (1-ka);
+    this->data.tp = ((double)((int16_t)(data_buf[6] << 8 | data_buf[7]))/333.87 + 21)  * kt + this->data.tp * (1-kt);
+    this->data.gx = ((double)((int16_t)(data_buf[8] << 8 | data_buf[9]))/131) * kg + this->data.gx * (1-kg);
+    this->data.gy = ((double)((int16_t)(data_buf[10] << 8 | data_buf[11]))/131) * kg + this->data.gy * (1-kg);
+    this->data.gz = ((double)((int16_t)(data_buf[12] << 8 | data_buf[13]))/131) * kg + this->data.gz * (1-kg);
 
-    //uint8_t ak8963_buf[1] = {0,};
-    //this->i2c_ak.readReg(0x01, ak8963_buf, 1);
-    //std::cout << (unsigned)ak8963_buf[0] << std::endl;
 }
-void MPU6050::test()
-{
-    std::cout << std::dec << (unsigned)((this->i2c.readReg(this->ACCEL_XOUT_H) << 8) | (this->i2c.readReg(this->ACCEL_XOUT_L))) << std::endl;
-}
+
 
 void MPU6050::run()
 {
@@ -89,26 +91,22 @@ void MPU6050::run()
         
     while(this->getStatus())
     {
-        //this->test();
         this->update();
-        //std::cout << std::fixed;
-        //std::cout.precision(3);
-        //std::cout << this->accelgyro.ax << "\t" << this->accelgyro.ay << "\t" << this->accelgyro.az << "\t" << this->accelgyro.tp << "\t" << this->accelgyro.gx << "\t" << this->accelgyro.gy << "\t" << this->accelgyro.gz << std::endl;
-        
+
         usleep(10000);
     }
     
 
 }
 
-void MPU6050::getData(AccelGyro& ag)
+void MPU6050::getData(Vector& accel, Vector& gyro)
 {
-    ag.ax = this->accelgyro.ax;
-    ag.ay = this->accelgyro.ay;
-    ag.az = this->accelgyro.az;
-    ag.tp = this->accelgyro.tp;
-    ag.gx = this->accelgyro.gx;
-    ag.gy = this->accelgyro.gy;
-    ag.gz = this->accelgyro.gz;
+    accel.x = this->data.ax;
+    accel.y = this->data.ay;
+    accel.z = this->data.az;
+
+    gyro.x = this->data.gx;
+    gyro.y = this->data.gy;
+    gyro.z = this->data.gz;
     
 }

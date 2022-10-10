@@ -6,7 +6,20 @@
 #include <unistd.h>
 #include <iostream>
 
-class AccelGyro
+extern int cnt;
+
+class Vector
+{
+public:
+    double x = 0;
+    double y = 0;
+    double z = 0;
+    Vector(){};
+    ~Vector(){};
+    Vector(const Vector& origin);
+};
+
+class MPU6050_Data
 {
 public:
     double ax = 0;
@@ -16,9 +29,9 @@ public:
     double gx = 0;
     double gy = 0;
     double gz = 0;
-    AccelGyro(){};
-    ~AccelGyro(){};
-    AccelGyro(const AccelGyro& origin);
+    MPU6050_Data(){};
+    ~MPU6050_Data(){};
+    MPU6050_Data(const MPU6050_Data& origin);
 };
 
 class MPU6050
@@ -75,20 +88,25 @@ private:
 
     };
     GPIO::Wire i2c;
+
+    MPU6050_Data data;
+
     double ka = 0.1;
     double kg = 0.1;
     double kt = 0.1;
 
-    //double ax, ay, az, tp, gx, gy, gz;
-    AccelGyro accelgyro;
     void update();
+    int id;
 public:
-    MPU6050(/* args */) {};
+    MPU6050(/* args */)
+    {
+        this->id = ++cnt;
+        std::cout << this->id << std::endl;
+    };
     ~MPU6050() {};
     int init();    
-    bool getStatus();
-    void getData(AccelGyro& ag);
-    void test();
+    bool getStatus();    
+    void getData(Vector& accel, Vector& gyro);
     void run();
 };
 

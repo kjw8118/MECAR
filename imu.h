@@ -10,6 +10,8 @@ class IMU
 {
 private:
     MPU6050 mpu6050;
+    Vector accel;
+    Vector gyro;
 public:
     IMU(){};
     ~IMU(){};
