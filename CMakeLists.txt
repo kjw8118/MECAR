@@ -26,6 +26,7 @@ set(SOURCES
     pointcloud.cpp
     mpu6050.cpp
     imu.cpp
+    linearalgebra.cpp
     )
 
     # Find the path to the pigpio includes.
