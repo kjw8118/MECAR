@@ -2,14 +2,15 @@
 
 #include "gpio_interface.h"
 
-int cnt = 0;
+#include <opencv2/opencv.hpp>
 
-Vector::Vector(const Vector& origin)
+
+/*Vector::Vector(const Vector& origin)
 {
     this->x = origin.x;
     this->y = origin.y;
     this->z = origin.z;
-}
+}*/
 
 MPU6050_Data::MPU6050_Data(const MPU6050_Data& origin)
 {
@@ -99,14 +100,14 @@ void MPU6050::run()
 
 }
 
-void MPU6050::getData(Vector& accel, Vector& gyro)
+void MPU6050::getData(cv::Vec3d& accel, cv::Vec3d& gyro)
 {
-    accel.x = this->data.ax;
-    accel.y = this->data.ay;
-    accel.z = this->data.az;
+    accel[0] = this->data.ax;
+    accel[1] = this->data.ay;
+    accel[2] = this->data.az;
 
-    gyro.x = this->data.gx;
-    gyro.y = this->data.gy;
-    gyro.z = this->data.gz;
+    gyro[0] = this->data.gx;
+    gyro[1] = this->data.gy;
+    gyro[2] = this->data.gz;
     
 }

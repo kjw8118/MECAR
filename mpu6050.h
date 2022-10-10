@@ -3,12 +3,13 @@
 
 #include "gpio_interface.h"
 
+#include <opencv2/opencv.hpp>
+
 #include <unistd.h>
 #include <iostream>
 
-extern int cnt;
 
-class Vector
+/*class Vector
 {
 public:
     double x = 0;
@@ -17,7 +18,7 @@ public:
     Vector(){};
     ~Vector(){};
     Vector(const Vector& origin);
-};
+};*/
 
 class MPU6050_Data
 {
@@ -91,22 +92,18 @@ private:
 
     MPU6050_Data data;
 
-    double ka = 0.1;
-    double kg = 0.1;
-    double kt = 0.1;
+    double ka = 1;
+    double kg = 1;
+    double kt = 1;
 
     void update();
     int id;
 public:
-    MPU6050(/* args */)
-    {
-        this->id = ++cnt;
-        std::cout << this->id << std::endl;
-    };
+    MPU6050(/* args */){};
     ~MPU6050() {};
     int init();    
     bool getStatus();    
-    void getData(Vector& accel, Vector& gyro);
+    void getData(cv::Vec3d& accel, cv::Vec3d& gyro);
     void run();
 };
 
