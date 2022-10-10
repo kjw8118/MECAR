@@ -22,6 +22,17 @@ namespace Communication
     {
 
     };
+
+    /*class Local_Server
+    {
+    private:
+        static int socket_count;
+    protected:
+        int socket;
+        std::function<void(void)> service_task
+
+    };*/
+
     class TCP_Server
     {
     protected:
