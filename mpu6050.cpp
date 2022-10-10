@@ -30,7 +30,7 @@ int MPU6050::init()
     uint8_t who_ret = this->i2c.readReg(this->WHO);
     if(who_ret != this->WHO_RET)
     {
-        std::cout << who_ret << std::endl;
+        std::cout << "MPU6050 self test: " << std::hex << (unsigned)who_ret << std::endl;
         return -1;
     }
     
