@@ -28,7 +28,7 @@ double Timer::lead_ms()
     this->get_t1_ms();    
     double ret = double((this->ct1.tv_sec - this->ct0.tv_sec)*1000 + (this->ct1.tv_nsec - this->ct0.tv_nsec)/1000000);
     this->set_t0_ms();
-    std::cout << "Lead time: " << ret << std::endl;
+    //std::cout << "Lead time: " << ret << std::endl;
     
     return ret;
 }

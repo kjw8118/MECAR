@@ -9,7 +9,7 @@ class Timer
 private:
     struct timespec ct, ct0, ct1, ct2;
     unsigned int tick0;
-    Communication::TCP_Server server_port;
+    Communication::Server<Communication::TCP_Server> server_port;
 
 
 public:
