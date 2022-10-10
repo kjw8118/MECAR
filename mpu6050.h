@@ -43,7 +43,7 @@ private:
         ADR = 0x68,
         SUB = 0x0c,
         WHO = 0x75,
-        WHO_RET = 0x71,
+        WHO_RET = 0x68,
         PWR_MGMT_1 = 0x6b,
         PWR_MGMT_1_DAT1 = 0x80,
         PWR_MGMT_1_DAT2 = 0x00,
