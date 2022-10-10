@@ -23,6 +23,9 @@ set(SOURCES
     joystick.cpp
     timer.cpp
     communication.cpp
+    pointcloud.cpp
+    mpu6050.cpp
+    imu.cpp
     )
 
     # Find the path to the pigpio includes.

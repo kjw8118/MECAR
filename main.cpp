@@ -2,25 +2,28 @@
 #include <thread>
 using namespace std;
 
-//#include "gpio_interface.h"
+#include "gpio_interface.h"
 
 //#include "powertrain.h"
 //#include "front_camera.h"
 //#include "front_radar.h"
-//#include "lidar.h"
+#include "lidar.h"
 //#include "speedometer.h"
 //#include "joystick.h"
 
-#include "timer.h"
+//#include "mpu6050.h"
+#include "imu.h"
 
-#include "communication.h"
+//#include "timer.h"
+
+//#include "communication.h"
 #include "unistd.h"
 
 
 int main()
 {
-    //thread gpio_thread = thread(&GPIO::init_gpio);
-    //gpio_thread.join();
+    thread gpio_thread = thread(&GPIO::init_gpio);
+    gpio_thread.join();
 
     //thread pt_thread = thread(&Powertrain::run, Powertrain());
     //thread cam_thread = thread(&FrontCamera::run, FrontCamera());
@@ -28,28 +31,34 @@ int main()
     //thread lidar_thread = thread(&LiDAR::run, LiDAR());
     //thread speedometer_thread = thread(&Speedometer::run, Speedometer());
     //thread joystick_thread = thread(&Joystick::run, Joystick());
-    thread timer_thread = thread(&Timer::run, Timer());
+    //thread timer_thread = thread(&Timer::run, Timer());
+    //thread mpu6050_thread = thread(&MPU6050::run, MPU6050());
+    thread imu_thread = thread(&IMU::run, IMU());
 
     //pt_thread.join();
     //cam_thread.join();
     //radar_thread.join();
+    //lidar_thread.join();
     //speedometer_thread.join();
     //joystick_thread.join();
-    timer_thread.join();
+    //timer_thread.join();
+
+    //mpu6050_thread.join();
+    imu_thread.join();
 
     //Timer timer;
     //timer.run();
 
-    Communication::Client<Communication::TCP_Client> client;
+    //Communication::Client<Communication::TCP_Client> client;
     
-    client.connect("192.168.0.28", 8118);
+    //client.connect("192.168.0.28", 8118);
 
-    std::cout << "Now enter loop" << std::endl;
-    while(true)
-    {
-        client.request();
-        sleep(1);
-    }
+    //std::cout << "Now enter loop" << std::endl;
+    //while(true)
+    //{
+        //client.request();
+        //sleep(1);
+    //}
 
 
     
