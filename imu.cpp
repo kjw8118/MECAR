@@ -5,7 +5,10 @@
 #include <thread>
 #include <future>
 #include <opencv2/opencv.hpp>
-#include "mpu6050.h"
+//#include "mpu6050.h"
+//#include "mpu9250.h"
+#include "gy87.h"
+
 #include "linearalgebra.h"
 
 void IMU::init()
@@ -17,22 +20,37 @@ void IMU::init()
 void IMU::run()
 {
     //std::thread mpu6050_thread = std::thread(&MPU6050::run, &(this->mpu6050));
-    std::future<void> mpu6050_async = std::async(std::launch::async, std::bind(&MPU6050::run, &(this->mpu6050)));
+    //std::future<void> mpu9250_async = std::async(std::launch::async, std::bind(&MPU9250::run, &(this->mpu9250)));
+    std::future<void> gy87_async = std::async(std::launch::async, std::bind(&GY87::run, &(this->gy87)));
     //mpu6050_thread.detach();
     
     sleep(1);
-    std::cout.precision(3);
+    std::cout.precision(2);
     
     while(true)
     {
-        cv::Vec3d accel_raw, gyro_raw;
-        this->mpu6050.getData(accel_raw, gyro_raw);
+        cv::Vec3d accel_raw, gyro_raw, magnet_raw;
+        this->gy87.getData(accel_raw, this->gyro, this->magnet);
         double accel_mag_raw = this->getAccelMag(accel_raw);
         this->getAngle(accel_raw, accel_mag_raw);
         this->getAccelNet(accel_raw);
         
-        std::cout << std::fixed << this->alpha*180/3.141592 << "\t" << this->beta*180/3.141592 << "\t" << this->accel[0] << "\t" << this->accel[1] << "\t" << this->accel[2] << std::endl;
-        //std::cout << std::fixed << accel_raw.x << "\t" << accel_raw.y << "\t" << accel_raw.z << std::endl;
+        std::cout << std::fixed << accel_mag_raw << "\t" << this->alpha*180/3.141592 << "\t" << this->beta*180/3.141592 << "\t";
+        for(int i=0; i<3; i++)
+        {
+            std::cout << this->accel[i] << "\t";
+        }
+        for(int i=0; i<3; i++)
+        {
+            std::cout << this->gyro[i] << "\t";
+        }
+        for(int i=0; i<3; i++)
+        {
+            std::cout << this->magnet[i] << "\t";
+        }
+        std::cout << std::endl;
+
+        //std::cout << std::fixed << accel_raw[0] << "\t" << accel_raw[1] << "\t" << accel_raw[2] << std::endl;
         
         usleep(10000);
     }

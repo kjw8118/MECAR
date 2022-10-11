@@ -5,16 +5,21 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "mpu6050.h"
-
+//#include "mpu6050.h"
+//#include "mpu9250.h"
+#include "gy87.h"
 
 class IMU
 {
 private:
-    MPU6050 mpu6050;
+    //MPU6050 mpu6050;
+    //MPU9250 mpu9250;
+    GY87 gy87;
     
     cv::Vec3d accel;
     cv::Vec3d gyro;
+    cv::Vec3d magnet;
+
     double accel_mag = 0;
 
     struct
@@ -34,7 +39,7 @@ public:
     void init();
     
     void run();
-    double getAccelMag(cv::Vec3d& accel_raw);
+    double getAccelMag(cv::Vec3d& accel_raw);    
     void getAngle(cv::Vec3d& accel_raw, double accel_mag_raw);
     cv::Vec3d getAccelNet(cv::Vec3d& accel_raw);
 };
