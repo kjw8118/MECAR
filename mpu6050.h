@@ -38,12 +38,12 @@ public:
 class MPU6050
 {
 private:
+    uint8_t address = 0;
+    uint8_t WHO_RET = 0;
     enum REGISTER
     {
-        ADR = 0x68,
-        SUB = 0x0c,
+        MAG = 0x0c,
         WHO = 0x75,
-        WHO_RET = 0x68,
         PWR_MGMT_1 = 0x6b,
         PWR_MGMT_1_DAT1 = 0x80,
         PWR_MGMT_1_DAT2 = 0x00,
@@ -92,17 +92,21 @@ private:
 
     MPU6050_Data data;
 
+    cv::Vec3d accel_offset, gyro_offset;
+
     double ka = 1;
     double kg = 1;
     double kt = 1;
+    void getOffset();
 
-    void update();
-    int id;
 public:
-    MPU6050(/* args */){};
-    ~MPU6050() {};
-    int init();    
-    bool getStatus();    
+    MPU6050(uint8_t address, uint8_t WHO_RET);
+    MPU6050(uint8_t address);
+    ~MPU6050();
+    int init();
+    void enable_slave();
+    bool getStatus();
+    void update(); 
     void getData(cv::Vec3d& accel, cv::Vec3d& gyro);
     void run();
 };
