@@ -37,6 +37,8 @@ private:
     double ka = 1;
     double kg = 1;
     double km = 1;
+
+    bool flag = false;
     
     void update();
 public:
@@ -46,6 +48,7 @@ public:
     bool getStatus();    
     void run();
     void getData(cv::Vec3d& accel, cv::Vec3d& gyro, cv::Vec3d& magnet);
+    bool isReady();
 };
 
 

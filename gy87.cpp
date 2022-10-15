@@ -36,6 +36,8 @@ GY87::~GY87()
 
 int GY87::init()
 {
+    this->flag = false;
+
     int ret = 0;
     ret += this->mpu6050.init();
     //mpu6050.enable_slave();
@@ -45,7 +47,7 @@ int GY87::init()
     
     ret += this->hmc5883l.init();
     
-    
+    this->flag = true;
 
     return ret;
 }
@@ -101,7 +103,7 @@ void GY87::run()
         usleep(10000);
     }
 
-
+    this->flag = false;
     std::cout << "GY87 exit" << std::endl;
     
 
@@ -120,4 +122,9 @@ void GY87::getData(cv::Vec3d& accel, cv::Vec3d& gyro, cv::Vec3d& magnet)
     magnet[0] = this->data.mx;
     magnet[1] = this->data.my;
     magnet[2] = this->data.mz;
+}
+
+bool GY87::isReady()
+{
+    return this->flag;
 }
