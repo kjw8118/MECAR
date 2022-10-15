@@ -45,13 +45,13 @@ void AHRS::run()
         this->gy87.getData(accel_raw, this->gyro, this->magnet);
         this->ts = this->timer.lead_ms();
         double accel_mag_raw = this->getAccelMag(accel_raw);
-        this->getAngle(accel_raw, accel_mag_raw, gyro_raw);
+        this->getAngle(accel_raw, accel_mag_raw, gyro_raw, this->magnet);
         this->getAccelNet(accel_raw);
         this->getVelocity();
         this->getDisplacement();
         
         std::cout << std::fixed << "ts: " << this->ts;
-        std::cout << ", |a|: " << this->accel_mag;
+        /*std::cout << ", |a|: " << this->accel_mag;*/
         std::cout << ", alpha: ";
         if(this->alpha >= 0)
             std::cout << " ";
@@ -60,29 +60,34 @@ void AHRS::run()
         if(this->beta >=0)
             std::cout << " ";
         std::cout << this->beta*180/3.141592;
+        std::cout << ", gamma: ";
+        if(this->gamma >=0)
+            std::cout << " ";
+        std::cout << this->gamma*180/3.141592;
 
-        for(int i=0; i<3; i++)
+        /*for(int i=0; i<3; i++)
         {
             std::cout << ", a" << i << ": ";
             if(this->accel[i] >= 0)
                 std::cout << " ";
             std::cout << this->accel[i];
         }
-        /*for(int i=0; i<3; i++)
+        for(int i=0; i<3; i++)
         {
             std::cout << ", g" << i << ": ";
             if(this->gyro[i] >= 0)
                 std::cout << " ";
             std::cout << this->gyro[i];
-        }
+        }*/
+        std::cout << ", |m|: " << std::sqrt(std::pow(this->magnet[0], 2) + std::pow(this->magnet[1], 2) + std::pow(this->magnet[2], 2));
         for(int i=0; i<3; i++)
         {
             std::cout << ", m" << i << ": ";
             if(this->magnet[i] >= 0)
                 std::cout << " ";
             std::cout << this->magnet[i];
-        }*/
-        for(int i=0; i<3; i++)
+        }
+        /*for(int i=0; i<3; i++)
         {
             std::cout << ", v" << i << ": ";
             if(this->velocity[i] >= 0)
@@ -95,7 +100,8 @@ void AHRS::run()
             if(this->displacement[i] >= 0)
                 std::cout << " ";
             std::cout << this->displacement[i];
-        }
+        }*/
+
         std::cout << std::endl;
 
         //std::cout << std::fixed << accel_raw[0] << "\t" << accel_raw[1] << "\t" << accel_raw[2] << std::endl;
@@ -113,10 +119,25 @@ double AHRS::getAccelMag(cv::Vec3d& accel_raw)
     return accel_mag_raw;
 
 }
-void AHRS::getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw)
+void AHRS::getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw, cv::Vec3d& magnet_raw)
 {    
     this->alpha += (gyro_raw[0] - (this->alpha - std::atan2(accel_raw[1], -accel_raw[2]))*this->k.alpha) * this->ts;
-    this->beta += (gyro_raw[1] - (this->beta - std::atan2(-accel_raw[0], accel_mag_raw))*this->k.beta * this->ts);
+    if(this->alpha > 3.141592)
+        this->alpha -= 3.141592;
+    else if(this->alpha < -3.141592)
+        this->alpha += 3.141592;
+
+    this->beta += (gyro_raw[1] - (this->beta - std::atan2(-accel_raw[0], accel_mag_raw))*this->k.beta * this->ts);    
+    if(this->beta > 3.141592)
+        this->beta -= 3.141592;
+    else if(this->beta < -3.141592)
+        this->beta += 3.141592;
+
+    this->gamma += (gyro_raw[2] - (this->gamma - std::atan2(magnet_raw[2], magnet_raw[0]))*this->k.gamma * this->ts);
+    if(this->gamma > 3.141592)
+        this->gamma -= 3.141592;
+    else if(this->gamma < -3.141592)
+        this->gamma += 3.141592;
 }
 cv::Vec3d AHRS::getAccelNet(cv::Vec3d& accel_raw)
 {

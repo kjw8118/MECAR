@@ -32,10 +32,12 @@ private:
         double accel_mag = 1;
         double alpha = 0.01;
         double beta = 0.1;
+        double gamma = 0.1;
     }k;
     
     double alpha = 0;
     double beta = 0;
+    double gamma = 0;
     
     cv::Vec3d velocity, displacement;
     Timer timer;
@@ -49,7 +51,7 @@ public:
     
     void run();
     double getAccelMag(cv::Vec3d& accel_raw);    
-    void getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw);
+    void getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw, cv::Vec3d& magnet_raw);
     cv::Vec3d getAccelNet(cv::Vec3d& accel_raw);
     void getVelocity();
     void getDisplacement();
