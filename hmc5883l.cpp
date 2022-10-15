@@ -83,13 +83,14 @@ void HMC5883L::update()
     uint8_t buf[6] = {0,};
     
     this->i2c.readReg(this->XOUT_H, buf, 6);
-
+    cv::Vec3d magnet_current;
     //std::cout << std::hex << (unsigned)((buf[0]&0xff)<<8 | (buf[1]&0xff)) << "\t" << (unsigned)((buf[2]&0xff)<<8 | (buf[3]&0xff)) << "\t" << (unsigned)((buf[4]&0xff)<<8 | (buf[5]&0xff)) << std::endl;
 
-
-    this->data.mx = (double)((int16_t)(buf[0]<<8 | buf[1]))/230;
-    this->data.my = (double)((int16_t)(buf[2]<<8 | buf[3]))/230;
-    this->data.mz = (double)((int16_t)(buf[4]<<8 | buf[5]))/230;
+    for(int i=0; i<3; i++)
+    {
+        magnet_current[i] = (double)((int16_t)(buf[2*i]<<8 | buf[2*i+1]))/230;    
+        this->data[i] = magnet_current[i] * this->k + this->data[i] * (1 - this->k);
+    }
     
 }
 void HMC5883L::run()
@@ -112,8 +113,7 @@ void HMC5883L::run()
 
 void HMC5883L::getData(cv::Vec3d& magnet)
 {
-    magnet[0] = this->data.mx;
-    magnet[1] = this->data.my;
-    magnet[2] = this->data.mz;
+    for(int i=0; i<3; i++)
+        magnet[i] = this->data[i];    
     
 }

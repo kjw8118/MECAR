@@ -46,7 +46,9 @@ private:
     };
     
     GPIO::Wire i2c;
-    HMC5883L_Data data;    
+    //HMC5883L_Data data;
+    cv::Vec3d data;
+    double k = 0.1;
         
 
 public:
