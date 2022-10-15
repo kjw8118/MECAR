@@ -38,7 +38,7 @@ int main()
     //thread speedometer_thread = thread(&Speedometer::run, Speedometer());
     //thread joystick_thread = thread(&Joystick::run, Joystick());
     //thread timer_thread = thread(&Timer::run, Timer());
-    //thread mpu6050_thread = thread(&MPU6050::run, MPU6050());
+    //thread mpu6050_thread = thread(&MPU6050::run, MPU6050(0x68, 0x68));
     //thread hmc5883l_thread = thread(&HMC5883L::run, HMC5883L());
     //thread mpu9250_thread = thread(&MPU9250::run, MPU9250());
     //thread gy87_thread = thread(&GY87::run, GY87());

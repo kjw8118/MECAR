@@ -24,7 +24,7 @@ double Timer::get_t1_ms()
 double Timer::lead_ms()
 {
     
-    sleep(1);
+    //sleep(1);
     this->get_t1_ms();    
     double ret = double((this->ct1.tv_sec - this->ct0.tv_sec)*1000 + (this->ct1.tv_nsec - this->ct0.tv_nsec)/1000000);
     this->set_t0_ms();
