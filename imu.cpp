@@ -13,40 +13,88 @@
 
 void IMU::init()
 {
-    
+    this->timer.set_t0_ms();
+
+    this->velocity.zeros();
+    this->displacement.zeros();
+
 }
 
 
 void IMU::run()
 {
+    
     //std::thread mpu6050_thread = std::thread(&MPU6050::run, &(this->mpu6050));
     //std::future<void> mpu9250_async = std::async(std::launch::async, std::bind(&MPU9250::run, &(this->mpu9250)));
     std::future<void> gy87_async = std::async(std::launch::async, std::bind(&GY87::run, &(this->gy87)));
     //mpu6050_thread.detach();
     
-    sleep(1);
-    std::cout.precision(2);
     
+    while(!this->gy87.isReady())
+    {
+        usleep(100000);
+    };
+    sleep(1);
+    this->init();
+
+    std::cout.precision(2);    
     while(true)
     {
+        
         cv::Vec3d accel_raw, gyro_raw, magnet_raw;
         this->gy87.getData(accel_raw, this->gyro, this->magnet);
+        this->ts = this->timer.lead_ms();
         double accel_mag_raw = this->getAccelMag(accel_raw);
-        this->getAngle(accel_raw, accel_mag_raw);
+        this->getAngle(accel_raw, accel_mag_raw, gyro_raw);
         this->getAccelNet(accel_raw);
+        this->getVelocity();
+        this->getDisplacement();
         
-        std::cout << std::fixed << accel_mag_raw << "\t" << this->alpha*180/3.141592 << "\t" << this->beta*180/3.141592 << "\t";
+        std::cout << std::fixed << "ts: " << this->ts;
+        std::cout << ", |a|: " << this->accel_mag;
+        std::cout << ", alpha: ";
+        if(this->alpha >= 0)
+            std::cout << " ";
+        std::cout << this->alpha*180/3.141592;
+        std::cout << ", beta: ";
+        if(this->beta >=0)
+            std::cout << " ";
+        std::cout << this->beta*180/3.141592;
+
         for(int i=0; i<3; i++)
         {
-            std::cout << this->accel[i] << "\t";
+            std::cout << ", a" << i << ": ";
+            if(this->accel[i] >= 0)
+                std::cout << " ";
+            std::cout << this->accel[i];
+        }
+        /*for(int i=0; i<3; i++)
+        {
+            std::cout << ", g" << i << ": ";
+            if(this->gyro[i] >= 0)
+                std::cout << " ";
+            std::cout << this->gyro[i];
         }
         for(int i=0; i<3; i++)
         {
-            std::cout << this->gyro[i] << "\t";
+            std::cout << ", m" << i << ": ";
+            if(this->magnet[i] >= 0)
+                std::cout << " ";
+            std::cout << this->magnet[i];
+        }*/
+        for(int i=0; i<3; i++)
+        {
+            std::cout << ", v" << i << ": ";
+            if(this->velocity[i] >= 0)
+                std::cout << " ";
+            std::cout << this->velocity[i];
         }
         for(int i=0; i<3; i++)
         {
-            std::cout << this->magnet[i] << "\t";
+            std::cout << ", d" << i << ": ";
+            if(this->displacement[i] >= 0)
+                std::cout << " ";
+            std::cout << this->displacement[i];
         }
         std::cout << std::endl;
 
@@ -65,10 +113,10 @@ double IMU::getAccelMag(cv::Vec3d& accel_raw)
     return accel_mag_raw;
 
 }
-void IMU::getAngle(cv::Vec3d& accel_raw, double accel_mag_raw)
-{
-    this->alpha = std::atan2(accel_raw[1], -accel_raw[2])*this->k.alpha + this->alpha * (1-this->k.alpha);
-    this->beta = std::atan2(-accel_raw[0], accel_mag_raw)*this->k.beta + this->beta * (1-this->k.beta);
+void IMU::getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw)
+{    
+    this->alpha += (gyro_raw[0] - (this->alpha - std::atan2(accel_raw[1], -accel_raw[2]))*this->k.alpha) * this->ts;
+    this->beta += (gyro_raw[1] - (this->beta - std::atan2(-accel_raw[0], accel_mag_raw))*this->k.beta * this->ts);
 }
 cv::Vec3d IMU::getAccelNet(cv::Vec3d& accel_raw)
 {
@@ -83,4 +131,25 @@ cv::Vec3d IMU::getAccelNet(cv::Vec3d& accel_raw)
     this->accel[1] = accel_net[1]*this->k.accel + this->accel[1]*(1-this->k.accel);
     this->accel[2] = accel_net[2]*this->k.accel + this->accel[2]*(1-this->k.accel);
     return accel_net;
+}
+
+void IMU::getVelocity()
+{
+
+    for(int i=0; i<3; i++)
+    {
+        this->velocity[i] += this->accel[i] * this->ts/1000;
+    }
+    
+}
+
+void IMU::getDisplacement()
+{
+    for(int i=0; i<3; i++)
+    {
+        this->displacement[i] += this->velocity[i] * this->ts/1000;
+    }    
+
+
+    
 }

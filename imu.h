@@ -5,6 +5,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "timer.h"
+
 //#include "mpu6050.h"
 //#include "mpu9250.h"
 #include "gy87.h"
@@ -20,18 +22,25 @@ private:
     cv::Vec3d gyro;
     cv::Vec3d magnet;
 
+    cv::Vec3d gyro_raw_past;
+
     double accel_mag = 0;
 
     struct
     {
-        double accel = 0.1;
-        double accel_mag = 0.1;
-        double alpha = 0.1;
+        double accel = 1;
+        double accel_mag = 1;
+        double alpha = 0.01;
         double beta = 0.1;
     }k;
     
     double alpha = 0;
     double beta = 0;
+    
+    cv::Vec3d velocity, displacement;
+    Timer timer;
+
+    double ts = 0;
 
 public:
     IMU(){};
@@ -40,8 +49,10 @@ public:
     
     void run();
     double getAccelMag(cv::Vec3d& accel_raw);    
-    void getAngle(cv::Vec3d& accel_raw, double accel_mag_raw);
+    void getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw);
     cv::Vec3d getAccelNet(cv::Vec3d& accel_raw);
+    void getVelocity();
+    void getDisplacement();
 };
 
 
