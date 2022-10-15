@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <iostream>
 
+#include "timer.h"
 
 /*class Vector
 {
@@ -90,14 +91,19 @@ private:
     };
     GPIO::Wire i2c;
 
-    MPU6050_Data data;
+    //MPU6050_Data data;
+    cv::Vec3d data_accel, data_gyro, data_gyro_raw;
+    cv::Scalar data_temperature;
 
     cv::Vec3d accel_offset, gyro_offset;
 
-    double ka = 1;
+    //double ka = 0.08;
+    cv::Vec3d ka;
     double kg = 1;
     double kt = 1;
+    double tau = 0.01;
     void getOffset();
+    Timer timer;
 
 public:
     MPU6050(uint8_t address, uint8_t WHO_RET);

@@ -2,6 +2,8 @@
 
 #include "gpio_interface.h"
 
+#include "timer.h"
+
 #include <opencv2/opencv.hpp>
 
 
@@ -76,16 +78,33 @@ int MPU6050::init()
     std::cout << std::hex << "INT_PIN_CFG: " << (unsigned)this->i2c.readReg(this->INT_PIN_CFG) << std::endl;
     std::cout << std::hex << "INT_ENABLE: " << (unsigned)this->i2c.readReg(this->INT_ENABLE) << std::endl;    
     
-
-    this->accel_offset[0] = 0;
-    this->accel_offset[1] = 0;
-    this->accel_offset[2] = 0;
-
-    this->gyro_offset[0] = 0;
-    this->gyro_offset[1] = 0;
-    this->gyro_offset[2] = 0;
+    for(int i=0; i<3; i++)
+    {
+        this->accel_offset[i] = 0;
+        this->gyro_offset[i] = 0;
+    }    
+    
+    this->ka[0] = 0.05;
+    this->ka[1] = 0.05;
+    this->ka[2] = 0.05;
 
     this->getOffset();
+
+    this->ka[0] = 0.08;
+    this->ka[1] = 0.03;
+    this->ka[2] = 0.01;
+    
+    std::cout << std::endl;
+    
+    std::cout << std::dec << "Accel Filtered X: " << this->data_accel[0] << std::endl;
+    std::cout << std::dec << "Accel Filtered Y: " << this->data_accel[1] << std::endl;
+    std::cout << std::dec << "Accel Filtered Z: " << this->data_accel[2] << std::endl;
+
+    std::cout << std::dec << "Gyro Filtered X: " << this->data_gyro[0] << std::endl;
+    std::cout << std::dec << "Gyro Filtered Y: " << this->data_gyro[1] << std::endl;
+    std::cout << std::dec << "Gyro Filtered Z: " << this->data_gyro[2] << std::endl;
+
+    std::cout << std::endl;
 
     std::cout << std::dec << "Accel Offset X: " << this->accel_offset[0] << std::endl;
     std::cout << std::dec << "Accel Offset Y: " << this->accel_offset[1] << std::endl;
@@ -94,28 +113,48 @@ int MPU6050::init()
     std::cout << std::dec << "Gyro Offset X: " << this->gyro_offset[0] << std::endl;
     std::cout << std::dec << "Gyro Offset Y: " << this->gyro_offset[1] << std::endl;
     std::cout << std::dec << "Gyro Offset Z: " << this->gyro_offset[2] << std::endl;
+    
+    std::cout << std::endl;
+    
+
+    //std::cout << std::dec << "INT_STATUS: " << this->getStatus() << std::endl;
 
     std::cout << "------------------------------------------------------------" << std::endl;
+
+    timer.set_t0_ms();
+
     return 0;
 }
 
 void MPU6050::getOffset()
 {
-    int i = 0;
-    while(++i < 100)
+    int i = 0, count = 300;
+    
+    usleep(10000);
+    while(++i <= count)
     {
         this->update();
+        std::cout << "\rNow MPU6050 getting offset... (" << std::dec << i << "/" << count << ")" << std::flush;
         usleep(10000);
     }
+    std::cout << " Done!" << std::endl;
     
-    this->accel_offset[0] = this->data.ax;
-    this->accel_offset[1] = this->data.ay;
-    this->accel_offset[2] = this->data.az + 9.81;
-
-    this->gyro_offset[0] = this->data.gx;
-    this->gyro_offset[1] = this->data.gy;
-    this->gyro_offset[2] = this->data.gz;
-
+    for(int i=0; i<3; i++)
+    {
+        this->accel_offset[i] = this->data_accel[i];
+        this->gyro_offset[i] = this->data_gyro[i];
+    }
+    this->accel_offset[2] += 9.81;
+    
+    usleep(10000);
+    i = 0;
+    while(++i <= count)
+    {
+        this->update();
+        std::cout << "\rNow MPU6050 calibrating... (" << std::dec << i << "/" << count << ")" << std::flush;
+        usleep(10000);
+    }
+    std::cout << " Done!" << std::endl;
 
 }
 
@@ -140,14 +179,41 @@ void MPU6050::update()
 
     this->i2c.readReg(this->ACCEL_XOUT_H, data_buf, 14);
     
-    this->data.ax = ((double)((int16_t)(data_buf[0] << 8 | data_buf[1]))/16384*9.81 - this->accel_offset[0]) * ka + this->data.ax * (1-ka);
-    this->data.ay = ((double)((int16_t)(data_buf[2] << 8 | data_buf[3]))/16384*9.81 - this->accel_offset[1]) * ka + this->data.ay * (1-ka);
-    this->data.az = (-(double)((int16_t)(data_buf[4] << 8 | data_buf[5]))/16384*9.81 - this->accel_offset[2]) * ka + this->data.az * (1-ka);
-    this->data.tp = ((double)((int16_t)(data_buf[6] << 8 | data_buf[7]))/333.87 + 21)  * kt + this->data.tp * (1-kt);
-    this->data.gx = ((double)((int16_t)(data_buf[8] << 8 | data_buf[9]))/65.5 - this->gyro_offset[0]) * kg + this->data.gx * (1-kg);
-    this->data.gy = ((double)((int16_t)(data_buf[10] << 8 | data_buf[11]))/65.5 - this->gyro_offset[1]) * kg + this->data.gy * (1-kg);
-    this->data.gz = ((double)((int16_t)(data_buf[12] << 8 | data_buf[13]))/65.5 - this->gyro_offset[2]) * kg + this->data.gz * (1-kg);
+    cv::Vec3d accel_current, gyro_current;
+    
+    double ts = timer.lead_ms();
+    for(int i=0; i<3; i++)
+    {
+        accel_current[i] = (double)((int16_t)(data_buf[i*2] << 8 | data_buf[i*2 + 1]))/16384*9.81;
+        gyro_current[i] = (double)((int16_t)(data_buf[i*2 + 8] << 8 | data_buf[i*2 + 1 + 8]))/65.5;
+    }
+    accel_current[2] = -accel_current[2];
 
+    for(int i=0; i<3; i++)
+    {
+        accel_current[i] -= this->accel_offset[i];
+        gyro_current[i] -= this->gyro_offset[i];
+    }
+
+    
+
+    for(int i=0; i<3; i++)
+    {
+        
+        this->data_accel[i] = accel_current[i] * this->ka[i] + this->data_accel[i] * (1 - this->ka[i]);        
+        this->data_gyro[i] = this->tau / (this->tau + ts) * this->data_gyro[i] + this->tau / (this->tau + ts) * (gyro_current[i] - this->data_gyro_raw[i]);
+        this->data_gyro_raw[i] = gyro_current[i];
+    }    
+
+    this->data_temperature.val[0] = ((double)((int16_t)(data_buf[6] << 8 | data_buf[7]))/333.87 + 21) * this->kt + this->data_temperature.val[0] * (1-this->kt);
+
+    /*std::cout << std::dec << std::fixed;
+    for(int i=0; i<3; i++)
+    {
+        std::cout << "a" << i << ": " << this->data_accel[i] << " ";
+    }
+    std::cout << std::endl;*/
+        
     //std::cout << std::dec << (int16_t)((data_buf[8]&0xff)<<8 | (data_buf[9]&0xff)) << "\t" << (int16_t)((data_buf[10]&0xff)<<8 | (data_buf[11]&0xff)) << "\t" << (int16_t)((data_buf[12]&0xff)<<8 | (data_buf[13]&0xff)) << std::endl;
 
     /*for(int i=0; i<7; i++)
@@ -169,11 +235,14 @@ void MPU6050::run()
     {
         std::cout << "MPU6050 init succ" << std::endl;        
     }
-        
+    std::cout.precision(3);
     while(this->getStatus())
     {
         this->update();
-
+        std::cout << std::dec << std::fixed << "MPU6050 >> ";
+        std::cout << "ax: " << this->data_accel[0] << "\tay: " << this->data_accel[1] << "\taz: " << this->data_accel[2];
+        std::cout << "\tgx: " << this->data_gyro[0] << "\tgx: " << this->data_gyro[1] << "\tgz: " << this->data_gyro[2];
+        std::cout << "\ttp: " << this->data_temperature << std::endl;
         usleep(10000);
     }
     
@@ -182,12 +251,10 @@ void MPU6050::run()
 
 void MPU6050::getData(cv::Vec3d& accel, cv::Vec3d& gyro)
 {
-    accel[0] = this->data.ax;
-    accel[1] = this->data.ay;
-    accel[2] = this->data.az;
-    
-    gyro[0] = this->data.gx;
-    gyro[1] = this->data.gy;
-    gyro[2] = this->data.gz;
+    for(int i=0; i<3; i++)
+    {
+        accel[i] = this->data_accel[i];
+        gyro[i] = this->data_gyro[i];
+    }
     
 }
