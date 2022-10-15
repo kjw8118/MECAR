@@ -29,7 +29,7 @@ set(SOURCES
     hmc5883l.cpp
     ak8963.cpp
     gy87.cpp
-    imu.cpp
+    ahrs.cpp
     linearalgebra.cpp
     )
 

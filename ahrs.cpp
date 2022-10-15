@@ -1,4 +1,4 @@
-#include "imu.h"
+#include "ahrs.h"
 
 #include <cmath>
 
@@ -11,7 +11,7 @@
 
 #include "linearalgebra.h"
 
-void IMU::init()
+void AHRS::init()
 {
     this->timer.set_t0_ms();
 
@@ -21,7 +21,7 @@ void IMU::init()
 }
 
 
-void IMU::run()
+void AHRS::run()
 {
     
     //std::thread mpu6050_thread = std::thread(&MPU6050::run, &(this->mpu6050));
@@ -105,7 +105,7 @@ void IMU::run()
     //mpu6050_thread.join();
     
 }
-double IMU::getAccelMag(cv::Vec3d& accel_raw)
+double AHRS::getAccelMag(cv::Vec3d& accel_raw)
 {
     double accel_mag_raw = std::sqrt(std::pow(accel_raw[0], 2) + std::pow(accel_raw[1], 2) + std::pow(accel_raw[2], 2));
     this->accel_mag = (accel_mag_raw - 9.81)*this->k.accel_mag + this->accel_mag*(1-this->k.accel_mag);
@@ -113,12 +113,12 @@ double IMU::getAccelMag(cv::Vec3d& accel_raw)
     return accel_mag_raw;
 
 }
-void IMU::getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw)
+void AHRS::getAngle(cv::Vec3d& accel_raw, double accel_mag_raw, cv::Vec3d& gyro_raw)
 {    
     this->alpha += (gyro_raw[0] - (this->alpha - std::atan2(accel_raw[1], -accel_raw[2]))*this->k.alpha) * this->ts;
     this->beta += (gyro_raw[1] - (this->beta - std::atan2(-accel_raw[0], accel_mag_raw))*this->k.beta * this->ts);
 }
-cv::Vec3d IMU::getAccelNet(cv::Vec3d& accel_raw)
+cv::Vec3d AHRS::getAccelNet(cv::Vec3d& accel_raw)
 {
     cv::Vec3d accel_net;
     accel_net = LinearAlgebra::RotateX(accel_raw, -this->alpha);
@@ -133,7 +133,7 @@ cv::Vec3d IMU::getAccelNet(cv::Vec3d& accel_raw)
     return accel_net;
 }
 
-void IMU::getVelocity()
+void AHRS::getVelocity()
 {
 
     for(int i=0; i<3; i++)
@@ -143,7 +143,7 @@ void IMU::getVelocity()
     
 }
 
-void IMU::getDisplacement()
+void AHRS::getDisplacement()
 {
     for(int i=0; i<3; i++)
     {

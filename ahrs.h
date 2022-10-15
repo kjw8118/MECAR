@@ -1,5 +1,5 @@
-#ifndef __IMU_H__
-#define __IMU_H__
+#ifndef __AHRS_H__
+#define __AHRS_H__
 
 #include <thread>
 
@@ -11,7 +11,7 @@
 //#include "mpu9250.h"
 #include "gy87.h"
 
-class IMU
+class AHRS
 {
 private:
     //MPU6050 mpu6050;
@@ -43,8 +43,8 @@ private:
     double ts = 0;
 
 public:
-    IMU(){};
-    ~IMU(){};
+    AHRS(){};
+    ~AHRS(){};
     void init();
     
     void run();

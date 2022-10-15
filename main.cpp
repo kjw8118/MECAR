@@ -15,7 +15,7 @@ using namespace std;
 //#include "hmc5883l.h"
 //#include "mpu9250.h"
 //#include "gy87.h"
-#include "imu.h"
+#include "ahrs.h"
 
 //#include "timer.h"
 
@@ -42,7 +42,7 @@ int main()
     //thread hmc5883l_thread = thread(&HMC5883L::run, HMC5883L());
     //thread mpu9250_thread = thread(&MPU9250::run, MPU9250());
     //thread gy87_thread = thread(&GY87::run, GY87());
-    thread imu_thread = thread(&IMU::run, IMU());
+    thread ahrs_thread = thread(&AHRS::run, AHRS());
 
     //pt_thread.join();
     //cam_thread.join();
@@ -56,7 +56,7 @@ int main()
     //hmc5883l_thread.join();
     //mpu9250_thread.join();
     //gy87_thread.join();
-    imu_thread.join();
+    ahrs_thread.join();
 
     //Timer timer;
     //timer.run();
