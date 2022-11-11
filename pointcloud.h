@@ -22,6 +22,8 @@ public:
     PointCloud();
     //~PointCloud();
     void putToF(ToF_t tof);
+    void putPoint(int _y, int _x);
+    void plot();
     cv::Mat getMap();
     //int getMap();
 };

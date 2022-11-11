@@ -64,6 +64,51 @@ void PointCloud::putToF(ToF_t tof)
     }
 }
 
+void PointCloud::putPoint(int _y, int _x)
+{
+    cv::Mat cloud_temp = cv::Mat::zeros(this->height, this->width, CV_64F);
+    
+    int y = _y + this->height/2;
+    int x = _x + this->width/2;
+
+    if(x < this->width && x >= 0 && y < this->height && y >= 0)
+    {
+        cloud_temp.at<double>(y,x) = 1;
+    }
+    for(int y=0; y<this->height; y++)
+    {
+        for(int x=0; x<this->width; x++)
+        {
+            double p = this->cloud.at<double>(y,x)*(1-this->k) + cloud_temp.at<double>(y,x)*k;
+            if(p > 1)
+                p = 1;
+            if(p < 0)
+                p = 0;
+            this->cloud.at<double>(y,x) = p;
+        }
+    }
+}
+
+void PointCloud::plot()
+{
+    
+    while(true)
+    {
+        
+        
+        
+        cv::Mat axes = this->getMap();
+        
+        cv::imshow("Plot", axes);
+        
+        if(cv::waitKey(1) == 27)
+            break;
+        
+    }
+    cv::destroyAllWindows();
+    
+    std::cout << "Plot exit" << std::endl;
+}
 cv::Mat PointCloud::getMap()
 {
     cv::Mat map = cv::Mat(this->height, this->width, CV_8UC3, cv::Scalar(255, 255, 255));
