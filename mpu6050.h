@@ -98,7 +98,7 @@ private:
     cv::Vec3d accel_offset, gyro_offset;
 
     //double ka = 0.08;
-    cv::Vec3d ka;
+    cv::Vec3d fa;
     double kg = 1;
     double kt = 1;
     double tau = 0.01;

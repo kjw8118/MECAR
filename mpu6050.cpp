@@ -84,15 +84,27 @@ int MPU6050::init()
         this->gyro_offset[i] = 0;
     }    
     
-    this->ka[0] = 0.05;
-    this->ka[1] = 0.05;
-    this->ka[2] = 0.05;
+    this->fa[0] = 50;
+    this->fa[1] = 50;
+    this->fa[2] = 50;
+    
+    std::cout << std::endl;
+    
+    std::cout << std::dec << "Accel Raw X: " << this->data_accel[0] << std::endl;
+    std::cout << std::dec << "Accel Raw Y: " << this->data_accel[1] << std::endl;
+    std::cout << std::dec << "Accel Raw Z: " << this->data_accel[2] << std::endl;
 
+    std::cout << std::dec << "Gyro Raw X: " << this->data_gyro[0] << std::endl;
+    std::cout << std::dec << "Gyro Raw Y: " << this->data_gyro[1] << std::endl;
+    std::cout << std::dec << "Gyro Raw Z: " << this->data_gyro[2] << std::endl;
+
+    
+    
     this->getOffset();
 
-    this->ka[0] = 0.08;
-    this->ka[1] = 0.03;
-    this->ka[2] = 0.01;
+    this->fa[0] = 50;
+    this->fa[1] = 30;
+    this->fa[2] = 10;
     
     std::cout << std::endl;
     
@@ -120,8 +132,8 @@ int MPU6050::init()
     //std::cout << std::dec << "INT_STATUS: " << this->getStatus() << std::endl;
 
     std::cout << "------------------------------------------------------------" << std::endl;
-
     timer.set_t0_ms();
+    
 
     return 0;
 }
@@ -131,6 +143,7 @@ void MPU6050::getOffset()
     int i = 0, count = 300;
     
     usleep(10000);
+    timer.set_t0_ms();
     while(++i <= count)
     {
         this->update();
@@ -175,6 +188,7 @@ bool MPU6050::getStatus()
 }
 void MPU6050::update()
 {
+    
     uint8_t data_buf[14] = {0,};
 
     this->i2c.readReg(this->ACCEL_XOUT_H, data_buf, 14);
@@ -199,9 +213,11 @@ void MPU6050::update()
 
     for(int i=0; i<3; i++)
     {
+        double ka = std::exp(-this->fa[i]*2*3.141592*ts/1000);
         
-        this->data_accel[i] = accel_current[i] * this->ka[i] + this->data_accel[i] * (1 - this->ka[i]);        
-        this->data_gyro[i] = this->tau / (this->tau + ts) * this->data_gyro[i] + this->tau / (this->tau + ts) * (gyro_current[i] - this->data_gyro_raw[i]);
+        double kg = this->tau / (this->tau + ts/1000);
+        this->data_accel[i] = accel_current[i] * ka + this->data_accel[i] * (1 - ka);        
+        this->data_gyro[i] = kg * this->data_gyro[i] + kg * (gyro_current[i] - this->data_gyro_raw[i]);
         this->data_gyro_raw[i] = gyro_current[i];
     }    
 
@@ -211,6 +227,10 @@ void MPU6050::update()
     for(int i=0; i<3; i++)
     {
         std::cout << "a" << i << ": " << this->data_accel[i] << " ";
+    }
+    for(int i=0; i<3; i++)
+    {
+        std::cout << "g" << i << ": " << this->data_gyro[i] << " ";
     }
     std::cout << std::endl;*/
         

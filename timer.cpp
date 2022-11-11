@@ -19,7 +19,11 @@ double Timer::get_t1_ms()
     return double(this->ct1.tv_sec*1000 + this->ct1.tv_nsec/1000000);
 }
 
-
+double Timer::lead_only_ms()
+{
+    this->get_t1_ms();    
+    return double((this->ct1.tv_sec - this->ct0.tv_sec)*1000 + (this->ct1.tv_nsec - this->ct0.tv_nsec)/1000000);
+}
 
 double Timer::lead_ms()
 {
@@ -35,8 +39,14 @@ double Timer::lead_ms()
 
 void Timer::wait_until_ms(int ms)
 {
-    while(this->lead_ms() < ms) {};
+    while(this->lead_only_ms() < ms) {};
     this->set_t0_ms();
+}
+
+double Timer::wait_until_with_lead_ms(int ms)
+{
+    while(this->lead_only_ms() <ms){};
+    return this->lead_ms();
 }
 
 bool Timer::flag_when_ms(int ms)
