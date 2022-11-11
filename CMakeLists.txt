@@ -31,6 +31,9 @@ set(SOURCES
     gy87.cpp
     ahrs.cpp
     linearalgebra.cpp
+    cvplot.hpp
+    mcp2515.cpp
+    can.cpp
     )
 
     # Find the path to the pigpio includes.
@@ -70,5 +73,7 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(${TARGET} ${SOURCES})
+
+add_library(gpio_interface STATIC gpio_interface.cpp)
 
 target_link_libraries(${TARGET} PRIVATE pthread ${OpenCV_LIBS})
