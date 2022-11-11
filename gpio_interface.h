@@ -175,7 +175,20 @@ namespace GPIO
     };
     
 
-    
+    class SPI
+    {
+    private:
+        int cs;
+        int handle;
+
+    public:
+        SPI(int cs): cs(cs) {};
+        void begin(int speed);
+        void select();
+        void unselect();
+        uint8_t transfer(uint8_t data);
+        uint8_t read();
+    };
 
         
 }

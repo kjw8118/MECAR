@@ -701,7 +701,33 @@ namespace GPIO
     }
 
     
-        
+    void SPI::begin(int speed)
+    {
+        this->handle = spiOpen(0, speed, 0);
+        GPIO::pinMode(this->cs, GPIO::OUTPUT);
+        GPIO::digitalWrite(this->cs, GPIO::HIGH);
+    }
+
+    uint8_t SPI::transfer(uint8_t data)
+    {
+        uint8_t rx[] = {0};        
+        int ret = spiXfer(this->handle, (char*)&data, (char*)rx, 1);        
+        return rx[0];
+
+    }
+    uint8_t SPI::read()
+    {        
+        return SPI::transfer(0x00);
+    }
+    void SPI::select()
+    {
+        GPIO::digitalWrite(this->cs, GPIO::LOW);
+    }
+    void SPI::unselect()
+    {
+        GPIO::digitalWrite(this->cs, GPIO::HIGH);
+        sleep(10);
+    }
 }
 
 /*template <class T>
