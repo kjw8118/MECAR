@@ -6,7 +6,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "timer.h"
-
+#include "pointcloud.h"
 //#include "mpu6050.h"
 //#include "mpu9250.h"
 #include "gy87.h"
@@ -19,9 +19,10 @@ private:
     GY87 gy87;
     
     cv::Vec3d accel;
+    cv::Vec3d accel_global;
     cv::Vec3d gyro;
     cv::Vec3d magnet;
-
+    
     cv::Vec3d gyro_raw_past;
 
     double accel_mag = 0;
@@ -30,9 +31,9 @@ private:
     {
         double accel = 1;
         double accel_mag = 1;
-        double alpha = 0.01;
-        double beta = 0.1;
-        double gamma = 0.1;
+        double alpha = 1.5;
+        double beta = 1;
+        double gamma = 1;
     }k;
     
     double alpha = 0;
@@ -41,7 +42,7 @@ private:
     
     cv::Vec3d velocity, displacement;
     Timer timer;
-
+    PointCloud pointcloud;
     double ts = 0;
 
 public:
